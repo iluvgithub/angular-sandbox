@@ -1,0 +1,25 @@
+:root {
+  --paper: #e6e3db;
+  --ink: #211f1c;
+  --ink-soft: #55524c;
+  --accent: #8a2f4d;
+  --accent-ink: #f5eef0;
+  --line: #b9b4a8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+body {
+  min-height: 100vh;
+}
