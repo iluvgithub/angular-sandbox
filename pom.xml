@@ -5,7 +5,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.example</groupId>
+  <groupId>com.myway.angular.sandbox</groupId>
   <artifactId>uppercase-app</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
@@ -160,7 +160,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.example.Main</mainClass>
+              <mainClass>com.myway.angular.sandbox.main.Main</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
