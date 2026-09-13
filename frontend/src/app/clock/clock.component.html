@@ -1,0 +1,23 @@
+<main class="stage">
+  <section class="card">
+    <h1 class="title">Clock</h1>
+    <p class="subtitle">
+      Live feed from the http4s clock service over Server-Sent Events.
+      <span class="status" [class.is-live]="connected()">
+        {{ connected() ? 'LIVE' : 'CONNECTING…' }}
+      </span>
+    </p>
+
+    <div class="display" role="timer" aria-live="polite">{{ now() }}</div>
+
+    <button
+      class="refresh"
+      type="button"
+      (click)="forceRefresh()"
+      [disabled]="refreshing()"
+      [attr.aria-busy]="refreshing()"
+    >
+      {{ refreshing() ? 'REFRESHING…' : 'FORCE REFRESH' }}
+    </button>
+  </section>
+</main>
