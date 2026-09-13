@@ -1,6 +1,17 @@
 {
+
+  "/debugclock": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": false
+  },
   "/uppercase/*": {
     "target": "http://localhost:8080",
     "secure": false
+  },
+  "/sse/clock": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true
   }
 }
