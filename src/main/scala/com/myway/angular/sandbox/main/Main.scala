@@ -3,12 +3,9 @@ package com.myway.angular.sandbox.main
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.semigroupk._
 import com.comcast.ip4s._
-import com.example.Main.webappBasePath
-import com.myway.angular.sandbox.service.clock.ClockService
 import com.myway.angular.sandbox.service.uppercase.UppercaseService
 import fs2.Stream
-import org.http4s.HttpRoutes
-import org.http4s.StaticFile
+import org.http4s.{HttpRoutes, StaticFile}
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
@@ -41,13 +38,13 @@ object Main extends IOApp {
 
   // Serves the SPA's own entry point at the root path.
   private val indexRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req @ GET -> Root =>
+    case req@GET -> Root =>
       StaticFile
         .fromResource[IO](s"$webappBasePath/index.html", Some(req))
         .getOrElseF(NotFound())
   }
   private val spaFallbackRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req @ GET -> _ =>
+    case req@GET -> _ =>
       StaticFile
         .fromResource[IO](s"$webappBasePath/index.html", Some(req))
         .getOrElseF(NotFound())
@@ -65,6 +62,7 @@ object Main extends IOApp {
         }
       wsb.build(send = ticks, receive = _ => Stream.empty)
   }
+
   // Serves every other file the Angular build produced (JS bundles, CSS, favicon, ...).
   private val staticAssetRoutes: HttpRoutes[IO] =
     resourceServiceBuilder[IO](webappBasePath).toRoutes
