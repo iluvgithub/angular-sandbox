@@ -1,4 +1,4 @@
-package com.myway.angular.sandbox.service
+package com.myway.angular.sandbox.service.uppercase
 
 import cats.effect.IO
 
