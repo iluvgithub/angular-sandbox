@@ -1,0 +1,41 @@
+<main class="stage">
+  <section class="press">
+    <h1 class="title">Uppercase Press</h1>
+    <p class="subtitle">Type a line, run it through the press, read the plate.</p>
+
+    <label class="field-label" for="input">Text to convert</label>
+    <div class="controls">
+      <input
+        id="input"
+        class="input"
+        type="text"
+        placeholder="type something…"
+        autocomplete="off"
+        [(ngModel)]="value"
+        (input)="onInput()"
+        (keydown)="onKeydown($event)"
+        [disabled]="status === 'loading'"
+      />
+      <button
+        class="run"
+        type="button"
+        (click)="convert()"
+        [disabled]="status === 'loading'"
+        [attr.aria-busy]="status === 'loading'"
+      >
+        <span class="run-label" [class.is-loading]="status === 'loading'">
+          <span class="spinner" *ngIf="status === 'loading'" aria-hidden="true"></span>
+          {{ status === 'loading' ? 'PRESSING' : 'PRESS' }}
+        </span>
+      </button>
+    </div>
+
+    <p class="hint" *ngIf="validationMessage" role="alert">{{ validationMessage }}</p>
+    <p class="hint hint--error" *ngIf="status === 'error'" role="alert">{{ errorMessage }}</p>
+
+    <canvas #plate class="plate" aria-hidden="true"></canvas>
+
+    <!-- Screen readers can't read canvas pixels, so mirror the result here. -->
+    <p class="sr-only" aria-live="polite">{{ liveResult }}</p>
+  </section>
+</main>
