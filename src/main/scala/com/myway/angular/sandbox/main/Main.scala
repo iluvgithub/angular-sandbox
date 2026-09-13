@@ -1,21 +1,17 @@
 package com.myway.angular.sandbox.main
 
+
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.semigroupk._
 import com.comcast.ip4s._
 import com.myway.angular.sandbox.service.clock.ClockService
 import com.myway.angular.sandbox.service.uppercase.UppercaseService
-import fs2.Stream
-import org.http4s.{HttpRoutes, StaticFile}
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 import org.http4s.server.staticcontent.resourceServiceBuilder
-import org.http4s.server.websocket.WebSocketBuilder2
-import org.http4s.websocket.WebSocketFrame
-
-import java.time.LocalDateTime
+import org.http4s.{HttpRoutes, StaticFile}
 
 object Main extends IOApp {
 
@@ -30,13 +26,27 @@ object Main extends IOApp {
         ok <- Ok(up)
       } yield ok
 
-    case GET -> Root / "clock" / text =>
+    case GET -> Root / "debugclock" =>
       for {
-        up <- UppercaseService.toUppercase(text)
+        up <- ClockService.clockNow
+        ok <- Ok(up)
+      } yield ok
+
+    case GET -> Root / "clock" =>
+      for {
+        up <- ClockService.clockNow
+        ok <- Ok(up)
+      } yield ok
+    case GET -> Root / "callclock" =>
+      for {
+        up <- ClockService.clockNow
         ok <- Ok(up)
       } yield ok
   }
-
+  private val clockRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root / "sse" / "clock" =>
+      Ok(ClockService.events)
+  }
   // Serves the SPA's own entry point at the root path.
   private val indexRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req@GET -> Root =>
@@ -52,19 +62,11 @@ object Main extends IOApp {
   }
 
 
-  // GET /ws/clock  ->  WebSocket that pushes the current time once a second,
-  // formatted as yyyy:MM:dd HH:mm:ss. The connection just streams; anything
-  // the client sends back is ignored.
-  private def clockRoute(wsb: WebSocketBuilder2[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "ws" / "clock" =>
-      ClockService.clock(wsb) 
-  }
-
   // Serves every other file the Angular build produced (JS bundles, CSS, favicon, ...).
   private val staticAssetRoutes: HttpRoutes[IO] =
     resourceServiceBuilder[IO](webappBasePath).toRoutes
 
-  private val allRoutes: HttpRoutes[IO] = apiRoutes <+> indexRoute <+> staticAssetRoutes
+  private val allRoutes: HttpRoutes[IO] = apiRoutes <+> clockRoute <+> staticAssetRoutes <+> indexRoute
 
   private val httpApp = Logger.httpApp(logHeaders = true, logBody = false)(allRoutes.orNotFound)
 
@@ -73,18 +75,14 @@ object Main extends IOApp {
     sys.env.get("PORT").flatMap(Port.fromString).getOrElse(port"8080")
 
   override def run(args: List[String]): IO[ExitCode] =
-
     EmberServerBuilder
       .default[IO]
       .withHost(host"0.0.0.0")
       .withPort(resolvePort)
-      .withHttpWebSocketApp { wsb =>
-        val allRoutes = apiRoutes <+> clockRoute(wsb) <+> staticAssetRoutes <+> spaFallbackRoute
-        Logger.httpApp(logHeaders = true, logBody = false)(allRoutes.orNotFound)
-      }
+      .withHttpApp(httpApp)
       .build
       .use { server =>
-        IO.println(s"uppercase-app listening on ${server.address}") *> IO.never
+        IO.println(s"sandbox angular app listening on ${server.address}") *> IO.never
       }
       .as(ExitCode.Success)
 }
