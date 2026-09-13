@@ -3,6 +3,7 @@ package com.myway.angular.sandbox.main
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.semigroupk._
 import com.comcast.ip4s._
+import com.myway.angular.sandbox.service.clock.ClockService
 import com.myway.angular.sandbox.service.uppercase.UppercaseService
 import fs2.Stream
 import org.http4s.{HttpRoutes, StaticFile}
@@ -56,11 +57,7 @@ object Main extends IOApp {
   // the client sends back is ignored.
   private def clockRoute(wsb: WebSocketBuilder2[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "ws" / "clock" =>
-      val ticks: Stream[IO, WebSocketFrame] =
-        Stream.awakeEvery[IO](1.second).map { _ =>
-          WebSocketFrame.Text(LocalDateTime.now().format(clockFormat))
-        }
-      wsb.build(send = ticks, receive = _ => Stream.empty)
+      ClockService.clock(wsb) 
   }
 
   // Serves every other file the Angular build produced (JS bundles, CSS, favicon, ...).
