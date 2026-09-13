@@ -1,8 +1,9 @@
-package com.example
+package com.myway.angular.sandbox.main
 
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.semigroupk._
 import com.comcast.ip4s._
+import com.myway.angular.sandbox.service.UppercaseService
 import org.http4s.HttpRoutes
 import org.http4s.StaticFile
 import org.http4s.dsl.io._
@@ -20,7 +21,11 @@ object Main extends IOApp {
   // GET /uppercase/{text}  ->  200 OK, body = text.toUpperCase
   private val apiRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "uppercase" / text =>
-      Ok(text.toUpperCase)
+      for {
+        up <- UppercaseService.toUppercase(text)
+        ok <- Ok(up)
+      } yield ok
+
   }
 
   // Serves the SPA's own entry point at the root path.
