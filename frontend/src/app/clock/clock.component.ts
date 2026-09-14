@@ -1,62 +1,74 @@
-import {Component, OnDestroy, OnInit, signal} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {firstValueFrom} from 'rxjs';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Subscription, firstValueFrom, of, timer } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+
+// How often the Clock screen polls the backend for the current time.
+const POLL_INTERVAL_MS = 15_000;
+
+// Always use an absolute (leading-slash) path here: a relative one resolves
+// against the *current route's* URL, not the site root, so it would break
+// depending on which page you're viewing it from.
+const CLOCK_NOW_URL = '/callclock';
 
 @Component({
-    selector: 'app-clock',
-    standalone: true,
-    templateUrl: './clock.component.html',
-    styleUrl: './clock.component.css',
+  selector: 'app-clock',
+  standalone: true,
+  templateUrl: './clock.component.html',
+  styleUrl: './clock.component.css',
 })
 export class ClockComponent implements OnInit, OnDestroy {
-    // Signal holding the latest formatted timestamp pushed by the server.
-    readonly now = signal('----:--:-- --:--:--');
-    readonly connected = signal(false);
-    readonly refreshing = signal(false);
+  // Signal holding the latest formatted timestamp fetched from the server.
+  readonly now = signal('----:--:-- --:--:--');
+  readonly connected = signal(false);
+  readonly refreshing = signal(false);
 
-    private source?: EventSource;
+  private pollSubscription?: Subscription;
 
-    constructor(private readonly http: HttpClient) {
-    }
+  constructor(private readonly http: HttpClient) {}
 
-    ngOnInit(): void {
-        // Same-origin SSE: served by the same http4s app as everything else.
-        // In local dev, ng serve proxies /sse/* to the backend (see proxy.conf.json).
-        // EventSource reconnects on its own if the connection drops - no manual
-        // retry logic needed here, unlike a raw WebSocket.
-        const source = new EventSource('/sse/clock');
-        this.source = source;
-        source.onopen = () => this.connected.set(true);
-        source.onmessage = (event: MessageEvent<string>) => {
-                console.log('SSE:', event.data);
-                this.now.set(event.data);
-            }
-        source.onerror = (error: Event)  =>
-        {
-            this.connected.set(false);
-            console.error('SSE error:', error)    ;
-        };
-    }
-
-    ngOnDestroy(): void {
-        this.source?.close();
-    }
-
-    async forceRefresh(): Promise<void> {
-        this.refreshing.set(true);
-        try {
-            const urlToCall = "debugclock"
-            const result = await firstValueFrom(
-                this.http.get(urlToCall, {responseType: 'text'})
-            );
-
-            this.now.set(result)
-            //this.now.set(result)
-        } catch {
-            // The SSE stream's own onerror handler already reflects connectivity
-            // issues via `connected`; nothing extra to show here.
-        } finally {
-            this.refreshing.set(false);
+  ngOnInit(): void {
+    // timer(0, interval) fires immediately, then every POLL_INTERVAL_MS.
+    // switchMap cancels any in-flight request if a new tick arrives before
+    // it resolves, so slow responses can't pile up.
+    this.pollSubscription = timer(0, POLL_INTERVAL_MS)
+      .pipe(
+        switchMap(() =>
+          this.http.get(CLOCK_NOW_URL, { responseType: 'text' }).pipe(
+            // Catch per-request errors here (not around the whole timer),
+            // so one failed poll doesn't kill all future polling.
+            catchError(() => of(null))
+          )
+        )
+      )
+      .subscribe((value) => {
+        if (value !== null) {
+          this.now.set(value);
+          this.connected.set(true);
+        } else {
+          this.connected.set(false);
         }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.pollSubscription?.unsubscribe();
+  }
+
+  // On-demand fetch outside the regular poll cadence - handy right after an
+  // action where you don't want to wait for the next scheduled tick.
+  async forceRefresh(): Promise<void> {
+    this.refreshing.set(true);
+    try {
+      const result = await firstValueFrom(
+        this.http.get(CLOCK_NOW_URL, { responseType: 'text' })
+      );
+      this.now.set(result);
+      this.connected.set(true);
+    } catch {
+      this.connected.set(false);
+    } finally {
+      this.refreshing.set(false);
     }
+  }
 }

@@ -2,9 +2,9 @@
   <section class="card">
     <h1 class="title">Clock</h1>
     <p class="subtitle">
-      Live feed from the http4s clock service over Server-Sent Events.
+      Live feed from the http4s clock service via periodic polling.
       <span class="status" [class.is-live]="connected()">
-        {{ connected() ? 'LIVE' : 'CONNECTING…' }}
+        {{ connected() ? 'POLLING' : 'UNREACHABLE' }}
       </span>
     </p>
 

@@ -8,7 +8,7 @@
 
 .card {
   width: 100%;
-  max-width: 1200px;
+  max-width: 600px;
   border: 1px solid var(--line);
   background: #f1efe9;
   padding: 32px;

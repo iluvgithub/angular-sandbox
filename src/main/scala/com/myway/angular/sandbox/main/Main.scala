@@ -26,26 +26,11 @@ object Main extends IOApp {
         ok <- Ok(up)
       } yield ok
 
-    case GET -> Root / "debugclock" =>
-      for {
-        up <- ClockService.clockNow
-        ok <- Ok(up)
-      } yield ok
-
-    case GET -> Root / "clock" =>
-      for {
-        up <- ClockService.clockNow
-        ok <- Ok(up)
-      } yield ok
     case GET -> Root / "callclock" =>
       for {
         up <- ClockService.clockNow
         ok <- Ok(up)
       } yield ok
-  }
-  private val clockRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "sse" / "clock" =>
-      Ok(ClockService.events)
   }
   // Serves the SPA's own entry point at the root path.
   private val indexRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
@@ -66,7 +51,7 @@ object Main extends IOApp {
   private val staticAssetRoutes: HttpRoutes[IO] =
     resourceServiceBuilder[IO](webappBasePath).toRoutes
 
-  private val allRoutes: HttpRoutes[IO] = apiRoutes <+> clockRoute <+> staticAssetRoutes <+> indexRoute
+  private val allRoutes: HttpRoutes[IO] = apiRoutes <+> staticAssetRoutes <+> indexRoute
 
   private val httpApp = Logger.httpApp(logHeaders = true, logBody = false)(allRoutes.orNotFound)
 
