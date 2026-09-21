@@ -1,6 +1,5 @@
 package com.myway.angular.sandbox.main
 
-
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.semigroupk._
 import com.comcast.ip4s._
@@ -33,19 +32,16 @@ object Main extends IOApp {
       } yield ok
   }
   // Serves the SPA's own entry point at the root path.
-  private val indexRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req@GET -> Root =>
-      StaticFile
-        .fromResource[IO](s"$webappBasePath/index.html", Some(req))
-        .getOrElseF(NotFound())
+  private val indexRoute: HttpRoutes[IO] = HttpRoutes.of[IO] { case req @ GET -> Root =>
+    StaticFile
+      .fromResource[IO](s"$webappBasePath/index.html", Some(req))
+      .getOrElseF(NotFound())
   }
-  private val spaFallbackRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req@GET -> _ =>
-      StaticFile
-        .fromResource[IO](s"$webappBasePath/index.html", Some(req))
-        .getOrElseF(NotFound())
+  private val spaFallbackRoute: HttpRoutes[IO] = HttpRoutes.of[IO] { case req @ GET -> _ =>
+    StaticFile
+      .fromResource[IO](s"$webappBasePath/index.html", Some(req))
+      .getOrElseF(NotFound())
   }
-
 
   // Serves every other file the Angular build produced (JS bundles, CSS, favicon, ...).
   private val staticAssetRoutes: HttpRoutes[IO] =
