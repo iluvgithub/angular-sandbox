@@ -1,191 +1,353 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.myway.angular.sandbox</groupId>
-  <artifactId>uppercase-app</artifactId>
-  <version>1.0.0</version>
-  <packaging>jar</packaging>
+    <groupId>com.myway.angular.sandbox</groupId>
+    <artifactId>uppercase-app</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
 
-  <name>uppercase-app</name>
-  <description>Single deployable: http4s backend serving its own Angular frontend</description>
+    <name>uppercase-app</name>
+    <description>
+        Single deployable: http4s backend serving its own Angular frontend
+    </description>
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <properties>
 
-    <scala.version>2.13.14</scala.version>
-    <scala.binary.version>2.13</scala.binary.version>
+        <!-- Java -->
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <http4s.version>0.23.31</http4s.version>
-    <cats-effect.version>3.5.4</cats-effect.version>
-    <logback.version>1.5.25</logback.version>
-    <scala-maven-plugin.version>4.9.2</scala-maven-plugin.version>
-    <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
-    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
+        <!-- Scala -->
+        <scala.version>2.13.14</scala.version>
+        <scala.binary.version>2.13</scala.binary.version>
 
-    <frontend.dir>frontend</frontend.dir>
-    <frontend.dist>${frontend.dir}/dist/uppercase-frontend/browser</frontend.dist>
-  </properties>
+        <!-- Functional stack -->
+        <cats.version>2.13.0</cats.version>
+        <cats-effect.version>3.6.3</cats-effect.version>
+        <fs2.version>3.12.2</fs2.version>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
-    </dependency>
+        <!-- HTTP -->
+        <http4s.version>0.23.31</http4s.version>
+        <ip4s.version>3.5.0</ip4s.version>
 
-    <!-- http4s server + dsl -->
-    <dependency>
-      <groupId>org.http4s</groupId>
-      <artifactId>http4s-ember-server_${scala.binary.version}</artifactId>
-      <version>${http4s.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.http4s</groupId>
-      <artifactId>http4s-dsl_${scala.binary.version}</artifactId>
-      <version>${http4s.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.comcast</groupId>
-      <artifactId>ip4s-core_${scala.binary.version}</artifactId>
-      <version>3.5.0</version>
-    </dependency>
+        <!-- JSON -->
+        <circe.version>0.14.14</circe.version>
 
-    <dependency>
-      <groupId>io.circe</groupId>
-      <artifactId>circe-generic_2.13</artifactId>
-      <version>0.14.14</version>
-    </dependency>
-    <dependency>
-      <groupId>org.http4s</groupId>
-      <artifactId>http4s-circe_2.13</artifactId>
-      <version>0.23.27</version>
-    </dependency>
-    <!-- logging -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-    </dependency>
-  </dependencies>
+        <!-- Logging -->
+        <logback.version>1.5.25</logback.version>
 
-  <build>
-    <sourceDirectory>src/main/scala</sourceDirectory>
+        <!-- Maven plugins -->
+        <scala-maven-plugin.version>4.9.2</scala-maven-plugin.version>
+        <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
 
-    <plugins>
-      <!-- Installs a local Node/npm and builds the Angular app - no system Node required. -->
-      <plugin>
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>
-        <version>${frontend-maven-plugin.version}</version>
-        <configuration>
-          <workingDirectory>${frontend.dir}</workingDirectory>
-        </configuration>
-        <executions>
-          <execution>
-            <id>install-node-and-npm</id>
-            <goals>
-              <goal>install-node-and-npm</goal>
-            </goals>
-            <configuration>
-              <nodeVersion>v20.19.5</nodeVersion>
-            </configuration>
-          </execution>
-          <execution>
-            <id>npm-install</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>install</arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>npm-build</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run build</arguments>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+        <!-- Angular -->
+        <frontend.dir>frontend</frontend.dir>
+        <frontend.dist>
+            ${frontend.dir}/dist/uppercase-frontend/browser
+        </frontend.dist>
 
-      <!-- Copies the built Angular app onto the classpath so http4s can serve it as resources. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${maven-resources-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>copy-frontend-build</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.outputDirectory}/webapp</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${frontend.dist}</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+    </properties>
 
-      <!-- Compiles Scala sources -->
-      <plugin>
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>scala-maven-plugin</artifactId>
-        <version>${scala-maven-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>scala-compile</id>
-            <goals>
-              <goal>compile</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <scalaVersion>${scala.version}</scalaVersion>
-        </configuration>
-      </plugin>
+    <dependencies>
 
-      <!-- Builds a runnable fat jar: java -jar target/uppercase-app-1.0.0-jar-with-dependencies.jar -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven-assembly-plugin.version}</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>com.myway.angular.sandbox.main.Main</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+        <!-- ========================================================= -->
+        <!-- Scala                                                       -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- Cats                                                        -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-core_${scala.binary.version}</artifactId>
+            <version>${cats.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- Cats Effect                                                 -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-effect_${scala.binary.version}</artifactId>
+            <version>${cats-effect.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-effect-kernel_${scala.binary.version}</artifactId>
+            <version>${cats-effect.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.typelevel</groupId>
+            <artifactId>cats-effect-std_${scala.binary.version}</artifactId>
+            <version>${cats-effect.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- FS2                                                         -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>co.fs2</groupId>
+            <artifactId>fs2-core_${scala.binary.version}</artifactId>
+            <version>${fs2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>co.fs2</groupId>
+            <artifactId>fs2-io_${scala.binary.version}</artifactId>
+            <version>${fs2.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- http4s                                                      -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-ember-server_${scala.binary.version}</artifactId>
+            <version>${http4s.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-dsl_${scala.binary.version}</artifactId>
+            <version>${http4s.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-circe_${scala.binary.version}</artifactId>
+            <version>${http4s.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- IP4S                                                        -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>com.comcast</groupId>
+            <artifactId>ip4s-core_${scala.binary.version}</artifactId>
+            <version>${ip4s.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- Circe                                                       -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>io.circe</groupId>
+            <artifactId>circe-core_${scala.binary.version}</artifactId>
+            <version>${circe.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.circe</groupId>
+            <artifactId>circe-generic_${scala.binary.version}</artifactId>
+            <version>${circe.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.circe</groupId>
+            <artifactId>circe-parser_${scala.binary.version}</artifactId>
+            <version>${circe.version}</version>
+        </dependency>
+
+
+        <!-- ========================================================= -->
+        <!-- Logging                                                     -->
+        <!-- ========================================================= -->
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+
+    </dependencies>
+
+
+    <build>
+
+        <sourceDirectory>src/main/scala</sourceDirectory>
+
+        <plugins>
+
+            <!-- ======================================================= -->
+            <!-- Angular / Node / npm                                    -->
+            <!-- ======================================================= -->
+
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend-maven-plugin.version}</version>
+
+                <configuration>
+                    <workingDirectory>${frontend.dir}</workingDirectory>
+                </configuration>
+
+                <executions>
+
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+
+                        <configuration>
+                            <nodeVersion>v20.19.5</nodeVersion>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>npm-install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>npm-build</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+
+            <!-- ======================================================= -->
+            <!-- Copy Angular distribution into classpath                 -->
+            <!-- ======================================================= -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+
+                <executions>
+
+                    <execution>
+                        <id>copy-frontend-build</id>
+                        <phase>process-resources</phase>
+
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.outputDirectory}/webapp
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.dist}</directory>
+                                </resource>
+                            </resources>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <!-- ======================================================= -->
+            <!-- Scala compiler                                           -->
+            <!-- ======================================================= -->
+
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala-maven-plugin.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>scala-compile</id>
+
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                </configuration>
+            </plugin>
+
+
+            <!-- ======================================================= -->
+            <!-- Fat JAR                                                   -->
+            <!-- ======================================================= -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven-assembly-plugin.version}</version>
+
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>
+                                com.myway.angular.sandbox.main.Main
+                            </mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>
+                            jar-with-dependencies
+                        </descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
