@@ -7,10 +7,6 @@ import fs2.concurrent.Topic
 
 import scala.concurrent.duration._
 
-/** `run` is a never-ending stream: roughly once a second (jittered a little so it doesn't look
- * robotic) it picks a random cell, gives it a new value, and publishes the change to every
- * subscriber.
- */
 final class GridService private (
                                   state: Ref[IO, Vector[Vector[Double]]],
                                   topic: Topic[IO, CellUpdate],
@@ -44,7 +40,6 @@ final class GridService private (
       _ <- topic.publish1(CellUpdate(r, c, rounded, now.toEpochMilli))
     } yield ()
 
-  /** Runs forever, updating one cell roughly every second (900ms-1300ms jitter). */
   def run: Stream[IO, Unit] =
     Stream.eval(Random.scalaUtilRandom[IO]).flatMap { random =>
       Stream
