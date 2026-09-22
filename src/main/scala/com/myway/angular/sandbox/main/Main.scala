@@ -47,6 +47,12 @@ object Main extends IOApp {
         gridService.updates.map(u => ServerSentEvent(data = Some(u.asJson.noSpaces)))
 
       Ok(events)
+
+    case GET -> Root =>
+      for {
+        up <- UppercaseService.toUppercase("text")
+        ok <- Ok(up)
+      } yield ok
   }
   // Serves the SPA's own entry point at the root path.
   private val indexRoute: HttpRoutes[IO] = HttpRoutes.of[IO] { case req @ GET -> Root =>
