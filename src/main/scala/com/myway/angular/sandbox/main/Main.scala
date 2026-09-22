@@ -65,7 +65,7 @@ object Main extends IOApp {
     resourceServiceBuilder[IO](webappBasePath).toRoutes
 
   private def makeAllRoutes(gridService: GridService): HttpRoutes[IO] =
-    apiRoutes(gridService) <+> staticAssetRoutes <+> indexRoute
+    apiRoutes(gridService) <+> staticAssetRoutes <+> indexRoute <+> spaFallbackRoute
 
   private def makeHttpApp(corsRoutes: HttpRoutes[IO]) =
     Http4sLogger.httpApp[IO](logHeaders = true, logBody = false)(corsRoutes.orNotFound)
