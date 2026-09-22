@@ -20,6 +20,9 @@ final class GridService private (
 
   private val HUNDRED_SCALE: Double = 100.0
   private val QUEUE_SIZE: Int       = 64
+  private val MIN_WAIT_MILLIS: Int       = 10000
+  private val MAX_WAIT_MILLIS: Int       = 20000
+
 
   def snapshot: IO[GridSnapshot] =
     state.get.map(grid => GridSnapshot(rows, cols, grid.map(_.toList).toList))
@@ -46,7 +49,7 @@ final class GridService private (
   def run: Stream[IO, Unit] =
     Stream.eval(Random.scalaUtilRandom[IO]).flatMap { random =>
       Stream
-        .repeatEval(random.betweenInt(900, 1300).map(_.millis))
+        .repeatEval(random.betweenInt(MIN_WAIT_MILLIS, MAX_WAIT_MILLIS).map(_.millis))
         .evalMap(delay => IO.sleep(delay) *> tick(random))
     }
 }
