@@ -3,17 +3,13 @@ package com.myway.angular.sandbox.main
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s._
-import com.myway.angular.sandbox.service.clock.ClockService
 import com.myway.angular.sandbox.service.gridpoll.GridService
-import com.myway.angular.sandbox.service.uppercase.UppercaseService
-import fs2.Stream
-import io.circe.syntax.EncoderOps
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.{CORS, Logger}
 import org.http4s.server.staticcontent.resourceServiceBuilder
-import org.http4s.{HttpApp, HttpRoutes, ServerSentEvent, StaticFile}
+import org.http4s.{HttpApp, HttpRoutes, StaticFile}
 
 object Main extends IOApp {
 
