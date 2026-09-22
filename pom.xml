@@ -58,6 +58,11 @@
       <version>3.5.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.circe</groupId>
+      <artifactId>circe-generic_2.13</artifactId>
+      <version>0.14.14</version>
+    </dependency>
     <!-- logging -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -85,7 +90,7 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v20.11.1</nodeVersion>
+              <nodeVersion>v20.19.5</nodeVersion>
             </configuration>
           </execution>
           <execution>
