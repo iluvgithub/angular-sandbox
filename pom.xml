@@ -63,6 +63,11 @@
       <artifactId>circe-generic_2.13</artifactId>
       <version>0.14.14</version>
     </dependency>
+    <dependency>
+      <groupId>org.http4s</groupId>
+      <artifactId>http4s-circe_2.13</artifactId>
+      <version>0.23.27</version>
+    </dependency>
     <!-- logging -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
