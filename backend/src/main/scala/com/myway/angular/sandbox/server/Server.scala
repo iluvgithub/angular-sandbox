@@ -18,7 +18,7 @@ import scala.util.Random
 object Server {
 
   // Grid dimensions: 3 rows (i: 0..2) x 4 columns (j: 0..3)
-  val Rows = 3
+  val Rows = 5
   val Cols = 4
 
   final case class Cell(i: Int, j: Int, value: Double)

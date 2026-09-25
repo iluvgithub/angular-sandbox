@@ -11,7 +11,7 @@ import { Cell, GridService } from './grid.service';
   styleUrls: ['./grid.component.css'],
 })
 export class GridComponent implements OnInit, OnDestroy {
-  readonly rows = 3;
+  readonly rows = 5;
   readonly cols = 4;
 
   // grid[i][j] holds the latest random value received for that cell
