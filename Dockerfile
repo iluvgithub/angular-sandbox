@@ -17,7 +17,7 @@ RUN mvn -B -q clean package -DskipTests
 
 # ---------- Stage 2: slim runtime image ----------
 FROM eclipse-temurin:17-jre-alpine
-WORKDIR /app 
+WORKDIR /app
 
 COPY --from=build /app/backend/target/backend-*.jar app.jar
 
