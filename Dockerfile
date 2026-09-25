@@ -1,20 +1,27 @@
-# --- Build stage -------------------------------------------------------------
-# frontend-maven-plugin downloads its own local Node/npm, so all we need here
-# is Maven + a JDK. It builds the Angular app and packages it onto the
-# classpath of the fat jar as part of `mvn package`.
-FROM maven:3.9-eclipse-temurin-17 AS build
-
-WORKDIR /build
-COPY . .
-RUN mvn -q -B package -DskipTests
-
-# --- Runtime stage -------------------------------------------------------------
-FROM eclipse-temurin:17-jre-alpine
-
+# ---------- Stage 1: build everything with Maven (which drives npm/ng too) ----------
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY --from=build /build/target/uppercase-app-1.0.0-jar-with-dependencies.jar ./app.jar
 
-# Render injects PORT at runtime; 8080 is just the local-dev default.
+# Copy POMs first for better layer caching
+COPY pom.xml .
+COPY backend/pom.xml backend/pom.xml
+COPY frontend/pom.xml frontend/pom.xml
+
+# Copy sources
+COPY backend backend
+COPY frontend frontend
+
+# Builds frontend module first (npm install + ng build), then backend
+# (copies compiled Angular assets in, compiles Scala, assembles fat jar)
+RUN mvn -B -q clean package -DskipTests
+
+# ---------- Stage 2: slim runtime image ----------
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+
+COPY --from=build /app/backend/target/backend-1.0.0-jar-with-dependencies.jar app.jar
+
+# Render (and most PaaS) injects PORT at runtime; default kept for local `docker run`
 ENV PORT=8080
 EXPOSE 8080
 
