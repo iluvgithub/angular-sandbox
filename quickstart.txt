@@ -2,3 +2,10 @@
 
 ==> Available at your primary URL https://angular-sandbox.onrender.com
 https://dashboard.render.com/web/srv-dai751e1egvs73ct5e3g/deploys/dep-dai751m1egvs73ct5eu0?r=2026-09-11%4021%3A27%3A38%7E2026-09-11%4021%3A31%3A56
+
+
+npm cache clean --force
+node -v     # should be 18.13+ or 20.x for Angular 17
+npm install
+npm start
+
