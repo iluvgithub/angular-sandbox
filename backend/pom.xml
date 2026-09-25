@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>random-grid-app</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>backend</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <scala.version>2.13.14</scala.version>
+    <scala.binary.version>2.13</scala.binary.version>
+    <http4s.version>0.23.27</http4s.version>
+    <cats.effect.version>3.5.4</cats.effect.version>
+    <fs2.version>3.10.2</fs2.version>
+    <ip4s.version>3.4.0</ip4s.version>
+    <circe.version>0.14.9</circe.version>
+    <logback.version>1.4.14</logback.version>
+    <main.class>com.example.randomgrid.Main</main.class>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.http4s</groupId>
+      <artifactId>http4s-ember-server_${scala.binary.version}</artifactId>
+      <version>${http4s.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.http4s</groupId>
+      <artifactId>http4s-dsl_${scala.binary.version}</artifactId>
+      <version>${http4s.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.http4s</groupId>
+      <artifactId>http4s-circe_${scala.binary.version}</artifactId>
+      <version>${http4s.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.http4s</groupId>
+      <artifactId>http4s-server_${scala.binary.version}</artifactId>
+      <version>${http4s.version}</version>
+    </dependency>
+
+    <!-- Pinned explicitly because Server.scala/Main.scala import these
+         directly; otherwise they'd only ride along transitively via http4s. -->
+    <dependency>
+      <groupId>org.typelevel</groupId>
+      <artifactId>cats-effect_${scala.binary.version}</artifactId>
+      <version>${cats.effect.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>co.fs2</groupId>
+      <artifactId>fs2-core_${scala.binary.version}</artifactId>
+      <version>${fs2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.comcast</groupId>
+      <artifactId>ip4s-core_${scala.binary.version}</artifactId>
+      <version>${ip4s.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.circe</groupId>
+      <artifactId>circe-core_${scala.binary.version}</artifactId>
+      <version>${circe.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.circe</groupId>
+      <artifactId>circe-generic_${scala.binary.version}</artifactId>
+      <version>${circe.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <plugins>
+      <!-- Compile Scala sources -->
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>4.9.2</version>
+        <executions>
+          <execution>
+            <id>scala-compile</id>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
+        </configuration>
+      </plugin>
+
+      <!-- Copy the compiled Angular app (built by the frontend module) into
+           this module's classpath resources so http4s can serve it as static files -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-frontend-dist</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.parent.basedir}/frontend/dist/frontend</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Build a single runnable fat jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.7.1</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>${main.class}</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

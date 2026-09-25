@@ -1,73 +1,51 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { CellUpdate, GridDataService } from '../services/grid-data.service';
-
-interface CellViewModel {
-  value: number;
-  flash: boolean;
-}
+import { Cell, GridService } from './grid.service';
 
 @Component({
   selector: 'app-grid',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './grid.component.html',
-  styleUrls: ['./grid.component.css']
+  styleUrls: ['./grid.component.css'],
 })
 export class GridComponent implements OnInit, OnDestroy {
-  rows = 5;
-  cols = 4;
-  cells: CellViewModel[][] = [];
+  readonly rows = 3;
+  readonly cols = 4;
+
+  // grid[i][j] holds the latest random value received for that cell
+  grid: number[][] = Array.from({ length: this.rows }, () => Array(this.cols).fill(0));
+  rowIndexes = Array.from({ length: this.rows }, (_, i) => i);
+  colIndexes = Array.from({ length: this.cols }, (_, j) => j);
+
+  lastUpdated: { i: number; j: number } | null = null;
+  connected = false;
 
   private subscription?: Subscription;
-  private flashTimers: (ReturnType<typeof setTimeout> | null)[][] = [];
 
-  constructor(private gridData: GridDataService) {}
+  constructor(private gridService: GridService) {}
 
   ngOnInit(): void {
-    this.initEmptyGrid(this.rows, this.cols);
-
-    this.gridData
-      .fetchInitialState()
-      .then((snapshot) => {
-        this.rows = snapshot.rows;
-        this.cols = snapshot.cols;
-        this.cells = snapshot.values.map((row) => row.map((value) => ({ value, flash: false })));
-        this.flashTimers = snapshot.values.map((row) => row.map(() => null));
-      })
-      .catch((err) => console.error('Could not load initial grid state', err))
-      .finally(() => {
-        this.subscription = this.gridData.streamUpdates().subscribe((update) => this.applyUpdate(update));
-      });
-  }
-
-  private initEmptyGrid(rows: number, cols: number): void {
-    this.cells = Array.from({ length: rows }, () =>
-      Array.from({ length: cols }, () => ({ value: 0, flash: false }))
-    );
-    this.flashTimers = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
-  }
-
-  private applyUpdate(update: CellUpdate): void {
-    const { row, col, value } = update;
-    if (!this.cells[row] || !this.cells[row][col]) {
-      return;
-    }
-
-    this.cells[row][col] = { value, flash: true };
-
-    const pending = this.flashTimers[row][col];
-    if (pending) {
-      clearTimeout(pending);
-    }
-    this.flashTimers[row][col] = setTimeout(() => {
-      this.cells[row][col] = { ...this.cells[row][col], flash: false };
-    }, 600);
+    this.subscription = this.gridService.streamUpdates().subscribe({
+      next: (cell: Cell) => this.applyCell(cell),
+      error: () => (this.connected = false),
+    });
+    this.connected = true;
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
-    this.flashTimers.flat().forEach((timer) => timer && clearTimeout(timer));
+  }
+
+  private applyCell(cell: Cell): void {
+    if (cell.i >= 0 && cell.i < this.rows && cell.j >= 0 && cell.j < this.cols) {
+      this.grid[cell.i][cell.j] = cell.value;
+      this.lastUpdated = { i: cell.i, j: cell.j };
+    }
+  }
+
+  isActive(i: number, j: number): boolean {
+    return !!this.lastUpdated && this.lastUpdated.i === i && this.lastUpdated.j === j;
   }
 }

@@ -1,8 +1,19 @@
-<div class="grid">
-  <div class="row" *ngFor="let row of cells; let r = index">
-    <div class="cell" *ngFor="let cell of row; let c = index" [class.flash]="cell.flash">
-      <div class="cell-label">R{{ r + 1 }} · C{{ c + 1 }}</div>
-      <div class="cell-value">{{ cell.value | number: '1.2-2' }}</div>
-    </div>
+<div class="page">
+  <h1>Random Number Grid</h1>
+  <p class="status" [class.live]="connected">
+    {{ connected ? 'Live · receiving random (i, j) updates' : 'Disconnected' }}
+  </p>
+
+  <div class="grid" [style.--cols]="cols">
+    <ng-container *ngFor="let i of rowIndexes">
+      <div
+        *ngFor="let j of colIndexes"
+        class="cell"
+        [class.active]="isActive(i, j)"
+      >
+        <span class="coord">({{ i }}, {{ j }})</span>
+        <span class="value">{{ grid[i][j] | number: '1.2-2' }}</span>
+      </div>
+    </ng-container>
   </div>
 </div>
