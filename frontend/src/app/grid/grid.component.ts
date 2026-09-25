@@ -27,7 +27,7 @@ export class GridComponent implements OnInit, OnDestroy {
   constructor(private gridService: GridService) {}
 
   ngOnInit(): void {
-    this.subscription = this.gridService.streamUpdates().subscribe({
+    this.subscription = this.gridService.streamUpdates(this.rows, this.cols).subscribe({
       next: (cell: Cell) => this.applyCell(cell),
       error: () => (this.connected = false),
     });
