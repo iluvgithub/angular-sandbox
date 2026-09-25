@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.example</groupId>
+    <groupId>com.myway.angular.sandbox</groupId>
     <artifactId>random-grid-app</artifactId>
     <version>1.0.0</version>
   </parent>
