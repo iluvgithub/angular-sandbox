@@ -10,14 +10,14 @@ import org.http4s.{EntityDecoder, _}
 object UpperCaseService {
 
   final case class UppercaseRequest(text: String)
-  final case class UppercaseResponse(result: String)
+  private final case class UppercaseResponse(result: String)
 
   implicit val uppercaseRequestDecoder: EntityDecoder[IO, UppercaseRequest] =
     jsonOf[IO, UppercaseRequest]
 
   def respond(req: Request[IO]): IO[Response[IO]] = for {
     body <- req.as[UppercaseRequest]
-    input = body.text
+    input  = body.text
     output = callService(input)
     resp <- Ok(UppercaseResponse(output).asJson)
   } yield resp
