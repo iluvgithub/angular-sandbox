@@ -8,7 +8,11 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 
-object UpperCaseService {
+trait UpperCaseService {
+
+  def respond[F[_]: Concurrent](req: Request[F]): F[Response[F]]
+}
+object UpperCaseServiceInstance extends UpperCaseService {
 
   final case class UppercaseRequest(text: String)
   private final case class UppercaseResponse(result: String)
@@ -16,7 +20,7 @@ object UpperCaseService {
   implicit def uppercaseRequestDecoder[F[_]: Concurrent]: EntityDecoder[F, UppercaseRequest] =
     jsonOf[F, UppercaseRequest]
 
-  def respond[F[_]: Concurrent](req: Request[F]): F[Response[F]] = {
+  override def respond[F[_]: Concurrent](req: Request[F]): F[Response[F]] = {
     val dsl = Http4sDsl[F]
     import dsl._
 

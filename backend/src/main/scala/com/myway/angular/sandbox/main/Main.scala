@@ -2,7 +2,9 @@ package com.myway.angular.sandbox.main
 import cats.effect._
 import com.comcast.ip4s._
 import com.myway.angular.sandbox.server.Routes
-import com.myway.angular.sandbox.services.chat.ChatService
+import com.myway.angular.sandbox.services.chat.{ChatService, ChatServiceInstance}
+import com.myway.angular.sandbox.services.grid.RandomValueGridServiceInstance
+import com.myway.angular.sandbox.services.uppercase.UpperCaseServiceInstance
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
@@ -14,15 +16,22 @@ object Main extends IOApp.Simple {
 
   val run: IO[Unit] =
     for {
-      topics <- ChatService.buildTopics
+      topics <- ChatServiceInstance.buildTopics
       _ <- EmberServerBuilder
         .default[IO]
         .withHost(host"0.0.0.0")
         .withPort(port)
-        .withHttpApp(Logger.httpApp(logHeaders = false, logBody = false)(Routes.routes(topics).orNotFound))
+        .withHttpApp(
+          Logger.httpApp(logHeaders = false, logBody = false)(
+            Routes(
+              UpperCaseServiceInstance,
+              RandomValueGridServiceInstance,
+              ChatServiceInstance
+            ).routes(topics).orNotFound
+          )
+        )
         .build
         .useForever
     } yield ()
-
 
 }

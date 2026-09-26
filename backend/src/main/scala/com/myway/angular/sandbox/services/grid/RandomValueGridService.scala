@@ -10,7 +10,13 @@ import org.http4s.{ServerSentEvent, _}
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.util.Random
 
-object RandomValueGridService {
+trait RandomValueGridService {
+
+  def respond(optRows: Option[Int], optCols: Option[Int]): IO[Response[IO]]
+
+}
+
+object RandomValueGridServiceInstance extends RandomValueGridService {
 
   val Period: FiniteDuration = 800.millis
 
@@ -41,11 +47,11 @@ object RandomValueGridService {
       }
       .map(cell => ServerSentEvent(data = Some(cell.asJson.noSpaces)))
 
-  def respond(optRows: Option[Int], optCols: Option[Int]): IO[Response[IO]] = {
+  override def respond(optRows: Option[Int], optCols: Option[Int]): IO[Response[IO]] = {
 
     val rows = clampDim(optRows, 5)
     val cols = clampDim(optCols, 3)
-    Ok(RandomValueGridService.randomCellStream(rows, cols))
+    Ok(randomCellStream(rows, cols))
 
   }
 

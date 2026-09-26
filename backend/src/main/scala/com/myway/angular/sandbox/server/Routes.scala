@@ -4,7 +4,7 @@ import cats.effect._
 import cats.syntax.semigroupk._
 import com.myway.angular.sandbox.services.chat.ChatService
 import com.myway.angular.sandbox.services.grid.RandomValueGridService
-import com.myway.angular.sandbox.services.grid.RandomValueGridService.{ColsParam, RowsParam}
+import com.myway.angular.sandbox.services.grid.RandomValueGridServiceInstance.{ColsParam, RowsParam}
 import com.myway.angular.sandbox.services.uppercase.UpperCaseService
 import fs2.concurrent.Topic
 import io.circe.syntax._
@@ -15,24 +15,28 @@ import org.http4s.headers.`Content-Type`
 import org.http4s.server.middleware.CORS
 import org.http4s.server.staticcontent.resourceServiceBuilder
 
-object Routes {
+case class Routes(
+  upperCaseService: UpperCaseService,
+  randomValueGridService: RandomValueGridService,
+  chatService: ChatService
+) {
 
   private def apiRoutes(topicsMap: Map[String, Topic[IO, String]]): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
 
       case GET -> Root / "api" / "stream" :? RowsParam(rowsParam) +& ColsParam(colsParam) =>
-        RandomValueGridService.respond(rowsParam, colsParam)
+        randomValueGridService.respond(rowsParam, colsParam)
 
-      case req @ POST -> Root / "api" / "uppercase" => UpperCaseService.respond(req)
+      case req @ POST -> Root / "api" / "uppercase" => upperCaseService.respond(req)
 
       case GET -> Root / "api" / "health" =>
         Ok(Map("status" -> "ok").asJson)
           .map(_.withContentType(`Content-Type`(MediaType.application.json)))
 
-      case GET -> Root / "api" / "chat" / room / "stream" => ChatService.subscribe(topicsMap, room)
+      case GET -> Root / "api" / "chat" / room / "stream" => chatService.subscribe(topicsMap, room)
 
       // POST /api/chat/send  {"room": "Asterix", "text": "..."} - publish to that room
-      case req @ POST -> Root / "api" / "chat" / "send" => ChatService.sendMessage(topicsMap, req)
+      case req @ POST -> Root / "api" / "chat" / "send" => chatService.sendMessage(topicsMap, req)
 
     }
 

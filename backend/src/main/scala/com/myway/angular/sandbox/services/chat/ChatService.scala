@@ -8,7 +8,14 @@ import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.io._
-object ChatService {
+
+trait ChatService {
+
+  def sendMessage(topics: Map[String, Topic[IO, String]], req: Request[IO]): IO[Response[IO]]
+
+  def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]]
+}
+object ChatServiceInstance extends ChatService {
 
   // The only two known chatrooms. Extend this list to add more rooms.
   val Rooms: List[String] = List("Asterix", "Obelix")
@@ -22,7 +29,10 @@ object ChatService {
   def buildTopics: IO[Map[String, Topic[IO, String]]] =
     Rooms.traverse(room => Topic[IO, String].map(room -> _)).map(_.toMap)
 
-  def sendMessage(topics: Map[String, Topic[IO, String]], req: Request[IO]): IO[Response[IO]] =
+  override def sendMessage(
+    topics: Map[String, Topic[IO, String]],
+    req: Request[IO]
+  ): IO[Response[IO]] =
     for {
       msg <- req.as[ChatMessage]
       room        = msg.room
@@ -46,7 +56,7 @@ object ChatService {
   ): Topic[IO, String] => IO[Either[Topic.Closed, Unit]] =
     _.publish1(ChatBroadcast(sender, messageText).asJson.noSpaces)
 
-  def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]] =
+  override def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]] =
     (
       for {
         otherRoom  <- otherRoom(room)
