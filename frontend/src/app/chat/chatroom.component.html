@@ -1,0 +1,28 @@
+<div class="page">
+    <h1>{{ room }} Chatroom</h1>
+    <p class="status" [class.live]="connected">
+        {{ connected ? 'Live · receiving messages' : 'Disconnected' }}
+    </p>
+
+    <div class="panel">
+        <div class="messages" #messagesEl>
+            <div *ngFor="let msg of messages" class="message-row" [class.own]="msg.own">
+                <span class="bubble">{{ msg.text }}</span>
+            </div>
+        </div>
+
+        <div class="composer">
+            <input
+                    type="text"
+                    class="textbox"
+                    placeholder="Type a message..."
+                    [(ngModel)]="message"
+                    (keyup.enter)="onSendClick()"
+            />
+
+            <button class="send-btn" [disabled]="sending" (click)="onSendClick()">
+                {{ sending ? 'Sending...' : 'Send' }}
+            </button>
+        </div>
+    </div>
+</div>
