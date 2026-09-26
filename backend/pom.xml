@@ -22,6 +22,8 @@
     <ip4s.version>3.4.0</ip4s.version>
     <circe.version>0.14.9</circe.version>
     <logback.version>1.4.14</logback.version>
+    <munit.version>1.0.0</munit.version>
+    <munit.cats.effect.version>2.0.0</munit.cats.effect.version>
     <main.class>com.myway.angular.sandbox.main.Main</main.class>
   </properties>
 
@@ -86,6 +88,33 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
+    </dependency>
+
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.scalameta</groupId>
+      <artifactId>munit_${scala.binary.version}</artifactId>
+      <version>${munit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.typelevel</groupId>
+      <artifactId>munit-cats-effect_${scala.binary.version}</artifactId>
+      <version>${munit.cats.effect.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.typelevel</groupId>
+      <artifactId>cats-effect-testkit_${scala.binary.version}</artifactId>
+      <version>${cats.effect.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.circe</groupId>
+      <artifactId>circe-parser_${scala.binary.version}</artifactId>
+      <version>${circe.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
