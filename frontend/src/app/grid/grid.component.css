@@ -23,6 +23,74 @@ h1 {
   color: #4ade80;
 }
 
+.controls {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  align-items: center;
+  justify-content: center;
+  row-gap: 0.6rem;
+  column-gap: 0.9rem;
+  padding: 0.9rem 1.3rem;
+  background: #161922;
+  border: 1px solid #2a2e3a;
+  border-radius: 14px;
+}
+
+.control-group {
+  display: contents;
+}
+
+.control-label {
+  font-size: 0.85rem;
+  color: #aaa;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  justify-self: start;
+}
+
+.control-value {
+  min-width: 1.6rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #e6e6e6;
+}
+
+.ctrl-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #3a63e0, #5f3fd6);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(79, 124, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.ctrl-btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 5px 12px rgba(79, 124, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  filter: brightness(1.08);
+}
+
+.ctrl-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 2px 4px rgba(79, 124, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.ctrl-btn:disabled {
+  background: #2a2e3a;
+  box-shadow: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(90px, 120px));

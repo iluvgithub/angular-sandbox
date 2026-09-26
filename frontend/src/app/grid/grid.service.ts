@@ -12,13 +12,17 @@ export class GridService {
     constructor(private zone: NgZone) {
     }
 
-    /** Opens a Server-Sent Events connection to /api/stream and emits each
+    /** Opens a Server-Sent Events (SSE) connection to /api/stream?.... and emits each
      * decoded Cell as it arrives. Reconnection on transient errors is left
      * to the browser's built-in EventSource retry behavior.
      */
-    streamUpdates(r: number, c: number): Observable<Cell> {
+    streamUpdates(rows: number, cols: number): Observable<Cell> {
         return new Observable<Cell>((observer) => {
-            const eventSource = new EventSource('/api/stream');
+            const params = new URLSearchParams({
+                rows: String(rows),
+                cols: String(cols),
+            });
+            const eventSource = new EventSource(`/api/stream?${params.toString()}`);
 
             eventSource.onmessage = (event: MessageEvent) => {
                 this.zone.run(() => {
@@ -39,4 +43,5 @@ export class GridService {
             return () => eventSource.close();
         });
     }
+
 }

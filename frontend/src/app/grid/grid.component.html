@@ -16,4 +16,19 @@
       </div>
     </ng-container>
   </div>
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-label">Rows</span>
+      <button type="button" class="ctrl-btn ctrl-btn--minus" (click)="decreaseRows()" [disabled]="rows <= minDim" aria-label="Decrease rows">−</button>
+      <span class="control-value">{{ rows }}</span>
+      <button type="button" class="ctrl-btn ctrl-btn--plus" (click)="increaseRows()" [disabled]="rows >= maxDim" aria-label="Increase rows">+</button>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Cols</span>
+      <button type="button" class="ctrl-btn ctrl-btn--minus" (click)="decreaseCols()" [disabled]="cols <= minDim" aria-label="Decrease cols">−</button>
+      <span class="control-value">{{ cols }}</span>
+      <button type="button" class="ctrl-btn ctrl-btn--plus" (click)="increaseCols()" [disabled]="cols >= maxDim" aria-label="Increase cols">+</button>
+    </div>
+  </div>
+
 </div>
