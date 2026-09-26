@@ -15,6 +15,7 @@ object ChatService {
 
   def otherRoom(room: String): Option[String] = Rooms.filterNot(_.equals(room)).headOption
   final case class ChatMessage(room: String, text: String)
+  final case class ChatBroadcast(sender: String, text: String)
 
   implicit val chatMessageDecoder: EntityDecoder[IO, ChatMessage] =
     jsonOf[IO, ChatMessage]
@@ -31,10 +32,9 @@ object ChatService {
       _ <- optOther.flatMap(topics.get).map(_.publish1(s">$messageText")).sequence
       resp <- topics.get(room) match {
         case Some(topic) =>
-          topic.publish1(s"   $messageText") *> Ok(Map("status" -> "sent").asJson)
+                     topic.publish1(ChatBroadcast(room, messageText).asJson.noSpaces) *> Ok(Map("status" -> "sent").asJson)
         case None =>
-          NotFound(s"""{"error":"Unknown chat room: ${msg.room}"}""")
-      }
+          NotFound(s"""{"error":"Unknown chat room: $room"}""")      }
     } yield resp
 
   def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]] =
