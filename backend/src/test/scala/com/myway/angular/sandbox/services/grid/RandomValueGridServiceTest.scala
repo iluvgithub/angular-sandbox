@@ -2,16 +2,17 @@ package com.myway.angular.sandbox.services.grid
 
 import cats.effect.IO
 import cats.effect.testkit.TestControl
+import io.circe.generic.auto._
 import io.circe.parser.decode
 import munit.CatsEffectSuite
-import org.http4s.{MediaType, Status, Uri}
 import org.http4s.dsl.io._
-import io.circe.generic.auto._
+import org.http4s.{MediaType, Status, Uri}
+
 import scala.concurrent.duration._
 
 class RandomValueGridServiceTest extends CatsEffectSuite {
 
-  val randomValueGridService = RandomValueGridServiceInstance
+  private val randomValueGridService = RandomValueGridServiceInstance
 
   test(
     "randomCellStream emits cells whose (i, j) stay within the requested bounds"
