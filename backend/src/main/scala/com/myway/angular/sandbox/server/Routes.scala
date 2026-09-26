@@ -44,6 +44,5 @@ object Routes {
     StaticFile.fromResource[IO]("/static/index.html", Some(req)).getOrElseF(NotFound())
   }
 
-  val routes: HttpRoutes[IO] =
-    corsApiRoutes <+> staticAssetRoutes <+> indexFallbackRoute
+  val routes: HttpRoutes[IO] = corsApiRoutes <+> staticAssetRoutes <+> indexFallbackRoute
 }

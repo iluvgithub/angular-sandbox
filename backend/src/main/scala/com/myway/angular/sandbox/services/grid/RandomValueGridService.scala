@@ -4,8 +4,8 @@ import cats.effect.IO
 import fs2.Stream
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.http4s.{ServerSentEvent, _}
 import org.http4s.dsl.io.{Ok, _}
+import org.http4s.{ServerSentEvent, _}
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.util.Random
@@ -18,15 +18,15 @@ object RandomValueGridService {
 
   val DIVISOR = 100.0
 
-  private val MinDim = 1
-  private val MaxDim = 50
+  private val MinDim     = 1
+  private val MaxDim     = 50
+  private val ROWS_PARAM = "rows"
+  private val COLS_PARAM = "cols"
 
   final case class Cell(i: Int, j: Int, value: Double)
 
-
-  object RowsParam extends OptionalQueryParamDecoderMatcher[Int]("rows")
-  object ColsParam extends OptionalQueryParamDecoderMatcher[Int]("cols")
-
+  object RowsParam extends OptionalQueryParamDecoderMatcher[Int](ROWS_PARAM)
+  object ColsParam extends OptionalQueryParamDecoderMatcher[Int](COLS_PARAM)
 
   def randomCellStream(rows: Int, cols: Int): Stream[IO, ServerSentEvent] =
     Stream
