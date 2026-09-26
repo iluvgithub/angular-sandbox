@@ -42,7 +42,6 @@ object RandomValueGridServiceInstance extends RandomValueGridService {
         val j = Random.nextInt(cols)
         val value = Math.round(Random.nextDouble() * RANGE) / DIVISOR
         Cell(i, j, value)
-
       }
       .map(cell => ServerSentEvent(data = Some(cell.asJson.noSpaces)))
 
@@ -50,11 +49,9 @@ object RandomValueGridServiceInstance extends RandomValueGridService {
       optRows: Option[Int],
       optCols: Option[Int]
   ): IO[Response[IO]] = {
-
     val rows = clampDim(optRows, 5)
     val cols = clampDim(optCols, 3)
     Ok(randomCellStream(rows, cols))
-
   }
 
   private def clampDim(value: Option[Int], default: Int): Int =
