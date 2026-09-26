@@ -9,11 +9,10 @@ import org.http4s.dsl.io.{Ok, _}
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.util.Random
+
 object RandomValueGridService {
 
   val Period: FiniteDuration = 800.millis
-
-  final case class Cell(i: Int, j: Int, value: Double)
 
   val RANGE = 10000
 
@@ -22,8 +21,12 @@ object RandomValueGridService {
   private val MinDim = 1
   private val MaxDim = 50
 
+  final case class Cell(i: Int, j: Int, value: Double)
+
+
   object RowsParam extends OptionalQueryParamDecoderMatcher[Int]("rows")
   object ColsParam extends OptionalQueryParamDecoderMatcher[Int]("cols")
+
 
   def randomCellStream(rows: Int, cols: Int): Stream[IO, ServerSentEvent] =
     Stream

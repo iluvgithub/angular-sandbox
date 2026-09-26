@@ -17,7 +17,11 @@ object UpperCaseService {
 
   def respond(req: Request[IO]): IO[Response[IO]] = for {
     body <- req.as[UppercaseRequest]
-    resp <- Ok(UppercaseResponse(body.text.toUpperCase).asJson)
+    input = body.text
+    output = callService(input)
+    resp <- Ok(UppercaseResponse(output).asJson)
   } yield resp
+
+  private def callService(input: String) = input.toUpperCase
 
 }

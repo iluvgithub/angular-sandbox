@@ -19,12 +19,12 @@ object Routes {
 
     case GET -> Root / "api" / "stream" :? RowsParam(rowsParam) +& ColsParam(colsParam) =>
       RandomValueGridService.respond(rowsParam, colsParam)
-    case GET -> Root / "api" / "health" =>
-      Ok(Map("status" -> "ok").asJson)
-        .map(_.withContentType(`Content-Type`(MediaType.application.json)))
 
     case req @ POST -> Root / "api" / "uppercase" => UpperCaseService.respond(req)
 
+    case GET -> Root / "api" / "health" =>
+      Ok(Map("status" -> "ok").asJson)
+        .map(_.withContentType(`Content-Type`(MediaType.application.json)))
   }
 
   val corsApiRoutes: HttpRoutes[IO] =
