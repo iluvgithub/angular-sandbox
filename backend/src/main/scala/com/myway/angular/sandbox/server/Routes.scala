@@ -21,7 +21,7 @@ case class Routes(
   chatService: ChatService
 ) {
 
-  private def apiRoutes(topicsMap: Map[String, Topic[IO, String]]): HttpRoutes[IO] =
+  def apiRoutes(topicsMap: Map[String, Topic[IO, String]]): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
 
       case GET -> Root / "api" / "stream" :? RowsParam(rowsParam) +& ColsParam(colsParam) =>
