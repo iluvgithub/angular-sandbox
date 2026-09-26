@@ -14,11 +14,10 @@ object ChatService {
   val Rooms: List[String] = List("Asterix", "Obelix")
 
   def otherRoom(room: String): Option[String] = Rooms.filterNot(_.equals(room)).headOption
-  final case class ChatMessage(room: String, text: String)
+  final case class ChatMessage(room: String, sender: String, text: String)
   final case class ChatBroadcast(sender: String, text: String)
 
-  implicit val chatMessageDecoder: EntityDecoder[IO, ChatMessage] =
-    jsonOf[IO, ChatMessage]
+  implicit val chatMessageDecoder: EntityDecoder[IO, ChatMessage] = jsonOf[IO, ChatMessage]
 
   def buildTopics: IO[Map[String, Topic[IO, String]]] =
     Rooms.traverse(room => Topic[IO, String].map(room -> _)).map(_.toMap)
@@ -29,13 +28,23 @@ object ChatService {
       room        = msg.room
       optOther    = otherRoom(room)
       messageText = msg.text
-      _ <- optOther.flatMap(topics.get).map(_.publish1(s">$messageText")).sequence
+      sender      = msg.sender
+      _ <- optOther.flatMap(topics.get).map(publishInTopic(sender, messageText)).sequence
       resp <- topics.get(room) match {
         case Some(topic) =>
-                     topic.publish1(ChatBroadcast(room, messageText).asJson.noSpaces) *> Ok(Map("status" -> "sent").asJson)
+          publishInTopic(sender, messageText)(topic) *> Ok(
+            Map("status" -> "sent").asJson
+          )
         case None =>
-          NotFound(s"""{"error":"Unknown chat room: $room"}""")      }
+          NotFound(s"""{"error":"Unknown chat room: $room"}""")
+      }
     } yield resp
+
+  private def publishInTopic(
+    sender: String,
+    messageText: String
+  ): Topic[IO, String] => IO[Either[Topic.Closed, Unit]] =
+    _.publish1(ChatBroadcast(sender, messageText).asJson.noSpaces)
 
   def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]] =
     (
