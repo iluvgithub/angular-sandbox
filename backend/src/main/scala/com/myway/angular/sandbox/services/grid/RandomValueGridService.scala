@@ -37,13 +37,12 @@ object RandomValueGridServiceInstance extends RandomValueGridService {
   def randomCellStream(rows: Int, cols: Int): Stream[IO, ServerSentEvent] =
     Stream
       .awakeEvery[IO](Period)
-      .evalMap { _ =>
-        IO {
-          val i = Random.nextInt(rows)
-          val j = Random.nextInt(cols)
-          val value = Math.round(Random.nextDouble() * RANGE) / DIVISOR
-          Cell(i, j, value)
-        }
+      .map { _ =>
+        val i = Random.nextInt(rows)
+        val j = Random.nextInt(cols)
+        val value = Math.round(Random.nextDouble() * RANGE) / DIVISOR
+        Cell(i, j, value)
+
       }
       .map(cell => ServerSentEvent(data = Some(cell.asJson.noSpaces)))
 
