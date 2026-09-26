@@ -63,7 +63,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         this.subscription?.unsubscribe();
         this.subscription = this.chatService.streamRoom(this.room).subscribe({
             next: (event: ChatEvent) => {
-                this.messages.push({ text: event.text, own: event.sender === this.clientId });
+                this.messages.push({ text: event.text, own: event.sender != this.clientId });
                 this.scrollToBottomSoon();
             },
             error: () => (this.connected = false),
