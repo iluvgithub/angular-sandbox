@@ -11,35 +11,46 @@ import org.http4s.dsl.io._
 
 trait ChatService {
 
-  def sendMessage(topics: Map[String, Topic[IO, String]], req: Request[IO]): IO[Response[IO]]
+  def sendMessage(
+      topics: Map[String, Topic[IO, String]],
+      req: Request[IO]
+  ): IO[Response[IO]]
 
-  def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]]
+  def subscribe(
+      topics: Map[String, Topic[IO, String]],
+      room: String
+  ): IO[Response[IO]]
 }
 object ChatServiceInstance extends ChatService {
 
   // The only two known chatrooms. Extend this list to add more rooms.
   val Rooms: List[String] = List("Asterix", "Obelix")
 
-  def otherRoom(room: String): Option[String] = Rooms.filterNot(_.equals(room)).headOption
+  def otherRoom(room: String): Option[String] =
+    Rooms.filterNot(_.equals(room)).headOption
   final case class ChatMessage(room: String, sender: String, text: String)
   final case class ChatBroadcast(sender: String, text: String)
 
-  implicit val chatMessageDecoder: EntityDecoder[IO, ChatMessage] = jsonOf[IO, ChatMessage]
+  implicit val chatMessageDecoder: EntityDecoder[IO, ChatMessage] =
+    jsonOf[IO, ChatMessage]
 
   def buildTopics: IO[Map[String, Topic[IO, String]]] =
     Rooms.traverse(room => Topic[IO, String].map(room -> _)).map(_.toMap)
 
   override def sendMessage(
-    topics: Map[String, Topic[IO, String]],
-    req: Request[IO]
+      topics: Map[String, Topic[IO, String]],
+      req: Request[IO]
   ): IO[Response[IO]] =
     for {
       msg <- req.as[ChatMessage]
-      room        = msg.room
-      optOther    = otherRoom(room)
+      room = msg.room
+      optOther = otherRoom(room)
       messageText = msg.text
-      sender      = msg.sender
-      _ <- optOther.flatMap(topics.get).map(publishInTopic(sender, messageText)).sequence
+      sender = msg.sender
+      _ <- optOther
+        .flatMap(topics.get)
+        .map(publishInTopic(sender, messageText))
+        .sequence
       resp <- topics.get(room) match {
         case Some(topic) =>
           publishInTopic(sender, messageText)(topic) *> Ok(
@@ -51,15 +62,18 @@ object ChatServiceInstance extends ChatService {
     } yield resp
 
   private def publishInTopic(
-    sender: String,
-    messageText: String
+      sender: String,
+      messageText: String
   ): Topic[IO, String] => IO[Either[Topic.Closed, Unit]] =
     _.publish1(ChatBroadcast(sender, messageText).asJson.noSpaces)
 
-  override def subscribe(topics: Map[String, Topic[IO, String]], room: String): IO[Response[IO]] =
+  override def subscribe(
+      topics: Map[String, Topic[IO, String]],
+      room: String
+  ): IO[Response[IO]] =
     (
       for {
-        otherRoom  <- otherRoom(room)
+        otherRoom <- otherRoom(room)
         otherTopic <- topics.get(otherRoom)
       } yield otherTopic
     ) match {

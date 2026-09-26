@@ -2,7 +2,10 @@ package com.myway.angular.sandbox.main
 import cats.effect._
 import com.comcast.ip4s._
 import com.myway.angular.sandbox.server.Routes
-import com.myway.angular.sandbox.services.chat.{ChatService, ChatServiceInstance}
+import com.myway.angular.sandbox.services.chat.{
+  ChatService,
+  ChatServiceInstance
+}
 import com.myway.angular.sandbox.services.grid.RandomValueGridServiceInstance
 import com.myway.angular.sandbox.services.uppercase.UpperCaseServiceInstance
 import org.http4s.ember.server.EmberServerBuilder

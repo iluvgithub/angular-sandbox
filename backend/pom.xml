@@ -26,6 +26,7 @@
     <munit.cats.effect.version>2.0.0</munit.cats.effect.version>
     <main.class>com.myway.angular.sandbox.main.Main</main.class>
     <mockito.version>1.17.37</mockito.version>
+    <spotless.version>3.8.0</spotless.version>
   </properties>
 
   <dependencies>
@@ -199,6 +200,34 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Spotless Maven Plugin -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+        <configuration>
+          <scala>
+            <includes>
+              <include>src/main/scala/**/*.scala</include>
+              <include>src/test/scala/**/*.scala</include>
+            </includes>
+            <!-- Use scalafmt (recommended for Scala) -->
+            <scalafmt>
+              <version>3.8.3</version> <!-- or latest compatible -->
+            </scalafmt>
+          </scala>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>

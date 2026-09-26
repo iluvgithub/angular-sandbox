@@ -14,7 +14,11 @@ class ChatServiceTest extends CatsEffectSuite {
 
   val chatService = ChatServiceInstance
   import org.http4s.circe.CirceEntityCodec._
-  private def sendRequest(room: String, sender: String, text: String): Request[IO] =
+  private def sendRequest(
+      room: String,
+      sender: String,
+      text: String
+  ): Request[IO] =
     Request[IO](Method.POST, uri"/api/chat/send")
       .withEntity(chatService.ChatMessage(room, sender, text))
 
@@ -30,23 +34,48 @@ class ChatServiceTest extends CatsEffectSuite {
 
   // --- sendMessage ---------------------------------------------------------------
 
-  test("sendMessage cross-posts the same broadcast to both the target room and its sibling") {
+  test(
+    "sendMessage cross-posts the same broadcast to both the target room and its sibling"
+  ) {
     val program =
       for {
-        topics     <- chatService.buildTopics
-        asterixSub <- topics("Asterix").subscribe(maxQueued = 16).take(1).compile.lastOrError.start
-        obelixSub  <- topics("Obelix").subscribe(maxQueued = 16).take(1).compile.lastOrError.start
-        _          <- IO.sleep(50.millis) // let both subscriptions register before publishing
-        resp       <- chatService.sendMessage(topics, sendRequest("Asterix", "alice", "hello"))
+        topics <- chatService.buildTopics
+        asterixSub <- topics("Asterix")
+          .subscribe(maxQueued = 16)
+          .take(1)
+          .compile
+          .lastOrError
+          .start
+        obelixSub <- topics("Obelix")
+          .subscribe(maxQueued = 16)
+          .take(1)
+          .compile
+          .lastOrError
+          .start
+        _ <- IO.sleep(
+          50.millis
+        ) // let both subscriptions register before publishing
+        resp <- chatService.sendMessage(
+          topics,
+          sendRequest("Asterix", "alice", "hello")
+        )
         _ = assertEquals(resp.status, Status.Ok)
         asterixMsg <- asterixSub.joinWithNever
-        obelixMsg  <- obelixSub.joinWithNever
+        obelixMsg <- obelixSub.joinWithNever
       } yield (asterixMsg, obelixMsg)
 
     TestControl.executeEmbed(program).map { case (asterixMsg, obelixMsg) =>
       val expected = broadcastJson("alice", "hello")
-      assertEquals(asterixMsg, expected, "the target room should receive the broadcast")
-      assertEquals(obelixMsg, expected, "the sibling room should also receive the same broadcast")
+      assertEquals(
+        asterixMsg,
+        expected,
+        "the target room should receive the broadcast"
+      )
+      assertEquals(
+        obelixMsg,
+        expected,
+        "the sibling room should also receive the same broadcast"
+      )
     }
   }
 
@@ -55,10 +84,18 @@ class ChatServiceTest extends CatsEffectSuite {
   ) {
     val program =
       for {
-        topics     <- chatService.buildTopics
-        asterixSub <- topics("Asterix").subscribe(maxQueued = 16).take(1).compile.lastOrError.start
-        _          <- IO.sleep(50.millis)
-        resp <- chatService.sendMessage(topics, sendRequest("NoSuchRoom", "bob", "leaked message"))
+        topics <- chatService.buildTopics
+        asterixSub <- topics("Asterix")
+          .subscribe(maxQueued = 16)
+          .take(1)
+          .compile
+          .lastOrError
+          .start
+        _ <- IO.sleep(50.millis)
+        resp <- chatService.sendMessage(
+          topics,
+          sendRequest("NoSuchRoom", "bob", "leaked message")
+        )
         _ = assertEquals(resp.status, Status.NotFound)
         leaked <- asterixSub.joinWithNever
       } yield leaked
@@ -76,7 +113,7 @@ class ChatServiceTest extends CatsEffectSuite {
     val program =
       for {
         topics <- chatService.buildTopics
-        resp   <- chatService.subscribe(topics, "Asterix")
+        resp <- chatService.subscribe(topics, "Asterix")
         _ = assertEquals(resp.status, Status.Ok)
         bodyFiber <- resp.body
           .through(fs2.text.utf8.decode)
@@ -84,8 +121,8 @@ class ChatServiceTest extends CatsEffectSuite {
           .compile
           .string
           .start
-        _    <- IO.sleep(50.millis)
-        _    <- topics("Obelix").publish1(broadcastJson("carol", "hi from obelix"))
+        _ <- IO.sleep(50.millis)
+        _ <- topics("Obelix").publish1(broadcastJson("carol", "hi from obelix"))
         body <- bodyFiber.joinWithNever
       } yield body
 
@@ -103,7 +140,7 @@ class ChatServiceTest extends CatsEffectSuite {
     val program =
       for {
         topics <- chatService.buildTopics
-        resp   <- chatService.subscribe(topics, "Obelix")
+        resp <- chatService.subscribe(topics, "Obelix")
         _ = assertEquals(resp.status, Status.Ok)
         bodyFiber <- resp.body
           .through(fs2.text.utf8.decode)
@@ -111,8 +148,10 @@ class ChatServiceTest extends CatsEffectSuite {
           .compile
           .string
           .start
-        _    <- IO.sleep(50.millis)
-        _    <- topics("Asterix").publish1(broadcastJson("dave", "hi from asterix"))
+        _ <- IO.sleep(50.millis)
+        _ <- topics("Asterix").publish1(
+          broadcastJson("dave", "hi from asterix")
+        )
         body <- bodyFiber.joinWithNever
       } yield body
 
@@ -130,7 +169,7 @@ class ChatServiceTest extends CatsEffectSuite {
     val program =
       for {
         topics <- chatService.buildTopics
-        resp   <- chatService.subscribe(topics, "NoSuchRoom")
+        resp <- chatService.subscribe(topics, "NoSuchRoom")
       } yield resp.status
 
     TestControl.executeEmbed(program).map { status =>

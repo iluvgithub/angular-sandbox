@@ -17,7 +17,8 @@ object UpperCaseServiceInstance extends UpperCaseService {
   final case class UppercaseRequest(text: String)
   private final case class UppercaseResponse(result: String)
 
-  implicit def uppercaseRequestDecoder[F[_]: Concurrent]: EntityDecoder[F, UppercaseRequest] =
+  implicit def uppercaseRequestDecoder[F[_]: Concurrent]
+      : EntityDecoder[F, UppercaseRequest] =
     jsonOf[F, UppercaseRequest]
 
   override def respond[F[_]: Concurrent](req: Request[F]): F[Response[F]] = {
@@ -26,7 +27,7 @@ object UpperCaseServiceInstance extends UpperCaseService {
 
     for {
       body <- req.as[UppercaseRequest]
-      input  = body.text
+      input = body.text
       output = callService(input)
       resp <- Ok(UppercaseResponse(output).asJson)
     } yield resp

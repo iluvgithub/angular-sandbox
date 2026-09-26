@@ -24,8 +24,8 @@ object RandomValueGridServiceInstance extends RandomValueGridService {
 
   val DIVISOR = 100.0
 
-  private val MinDim     = 1
-  private val MaxDim     = 50
+  private val MinDim = 1
+  private val MaxDim = 50
   private val ROWS_PARAM = "rows"
   private val COLS_PARAM = "cols"
 
@@ -39,15 +39,18 @@ object RandomValueGridServiceInstance extends RandomValueGridService {
       .awakeEvery[IO](Period)
       .evalMap { _ =>
         IO {
-          val i     = Random.nextInt(rows)
-          val j     = Random.nextInt(cols)
+          val i = Random.nextInt(rows)
+          val j = Random.nextInt(cols)
           val value = Math.round(Random.nextDouble() * RANGE) / DIVISOR
           Cell(i, j, value)
         }
       }
       .map(cell => ServerSentEvent(data = Some(cell.asJson.noSpaces)))
 
-  override def respond(optRows: Option[Int], optCols: Option[Int]): IO[Response[IO]] = {
+  override def respond(
+      optRows: Option[Int],
+      optCols: Option[Int]
+  ): IO[Response[IO]] = {
 
     val rows = clampDim(optRows, 5)
     val cols = clampDim(optCols, 3)

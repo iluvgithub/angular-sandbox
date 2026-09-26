@@ -11,10 +11,11 @@ import scala.concurrent.duration._
 
 class RandomValueGridServiceTest extends CatsEffectSuite {
 
-
   val randomValueGridService = RandomValueGridServiceInstance
 
-  test("randomCellStream emits cells whose (i, j) stay within the requested bounds") {
+  test(
+    "randomCellStream emits cells whose (i, j) stay within the requested bounds"
+  ) {
     val rows = 3
     val cols = 2
 
@@ -28,15 +29,22 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
           assertEquals(events.size, 20)
 
           events.foreach { sse =>
-            val payload = sse.data.getOrElse(fail("SSE event is missing a data payload"))
+            val payload =
+              sse.data.getOrElse(fail("SSE event is missing a data payload"))
             val cell = decode[randomValueGridService.Cell](payload)
               .getOrElse(fail(s"could not decode SSE payload: $payload"))
 
-            assert(cell.i >= 0 && cell.i < rows, s"i=${cell.i} is out of bounds for rows=$rows")
-            assert(cell.j >= 0 && cell.j < cols, s"j=${cell.j} is out of bounds for cols=$cols")
+            assert(
+              cell.i >= 0 && cell.i < rows,
+              s"i=${cell.i} is out of bounds for rows=$rows"
+            )
+            assert(
+              cell.j >= 0 && cell.j < cols,
+              s"j=${cell.j} is out of bounds for cols=$cols"
+            )
             assert(
               cell.value >= 0.0 && cell.value <= (randomValueGridService.RANGE / randomValueGridService.DIVISOR),
-              s"value=${cell.value} is outside the expected [0, 100] range",
+              s"value=${cell.value} is outside the expected [0, 100] range"
             )
           }
         }
@@ -53,7 +61,8 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
         .toList
         .map { events =>
           events.foreach { sse =>
-            val cell = decode[randomValueGridService.Cell](sse.data.get).toOption.get
+            val cell =
+              decode[randomValueGridService.Cell](sse.data.get).toOption.get
             assertEquals(cell.i, 0)
             assertEquals(cell.j, 0)
           }
@@ -66,8 +75,8 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
     val program: IO[FiniteDuration] =
       for {
         start <- IO.monotonic
-        _     <- randomValueGridService.randomCellStream(1, 1).take(4).compile.drain
-        end   <- IO.monotonic
+        _ <- randomValueGridService.randomCellStream(1, 1).take(4).compile.drain
+        end <- IO.monotonic
       } yield end - start
 
     // Runs under TestControl's simulated clock, so this resolves instantly in
@@ -75,7 +84,7 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
     TestControl.executeEmbed(program).map { elapsed =>
       assert(
         elapsed >= randomValueGridService.Period * 3,
-        s"expected at least 3 full periods to elapse for 4 spaced events, got $elapsed",
+        s"expected at least 3 full periods to elapse for 4 spaced events, got $elapsed"
       )
     }
   }
@@ -85,11 +94,16 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
   test("respond returns 200 OK with an SSE content type") {
     randomValueGridService.respond(None, None).map { resp =>
       assertEquals(resp.status, Status.Ok)
-      assertEquals(resp.contentType.map(_.mediaType), Some(MediaType.`text/event-stream`))
+      assertEquals(
+        resp.contentType.map(_.mediaType),
+        Some(MediaType.`text/event-stream`)
+      )
     }
   }
 
-  test("respond falls back to the default rows/cols when out-of-range values are supplied") {
+  test(
+    "respond falls back to the default rows/cols when out-of-range values are supplied"
+  ) {
     // rows/cols are clamped internally (see clampDim), so out-of-range input must
     // not blow up the request - it should still succeed with the defaults (5, 3).
     randomValueGridService.respond(Some(-1), Some(9999)).map { resp =>
@@ -103,7 +117,8 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
     val uri = Uri.unsafeFromString("/api/stream?rows=7&cols=2")
 
     uri.multiParams match {
-      case randomValueGridService.RowsParam(rowsOpt) +& randomValueGridService.ColsParam(colsOpt) =>
+      case randomValueGridService.RowsParam(rowsOpt) +& randomValueGridService
+            .ColsParam(colsOpt) =>
         assertEquals(rowsOpt, Some(7))
         assertEquals(colsOpt, Some(2))
       case other =>
@@ -115,7 +130,8 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
     val uri = Uri.unsafeFromString("/api/stream")
 
     uri.multiParams match {
-      case randomValueGridService.RowsParam(rowsOpt) +& randomValueGridService.ColsParam(colsOpt) =>
+      case randomValueGridService.RowsParam(rowsOpt) +& randomValueGridService
+            .ColsParam(colsOpt) =>
         assertEquals(rowsOpt, None)
         assertEquals(colsOpt, None)
       case other =>
@@ -123,4 +139,3 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
     }
   }
 }
-
