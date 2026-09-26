@@ -17,9 +17,8 @@ import scala.util.Random
 
 object Server {
 
-  // Grid dimensions: 3 rows (i: 0..2) x 4 columns (j: 0..3)
-  val Rows = 5
-  val Cols = 4
+
+  val Period: FiniteDuration = 800.millis
 
   final case class Cell(i: Int, j: Int, value: Double)
 
@@ -32,22 +31,36 @@ object Server {
   /** An infinite stream that emits a randomly chosen cell (i, j) with a
     * random value roughly every 800ms, encoded as a Server-Sent Event.
     */
-  def randomCellStream: Stream[IO, ServerSentEvent] =
+  def randomCellStream(rows: Int, cols: Int): Stream[IO, ServerSentEvent] =
     Stream
-      .awakeEvery[IO](800.millis)
+      .awakeEvery[IO](Period)
       .evalMap { _ =>
         IO {
-          val i = Random.nextInt(Rows)
-          val j = Random.nextInt(Cols)
+          val i = Random.nextInt(rows)
+          val j = Random.nextInt(cols)
           val value = Math.round(Random.nextDouble() * 10000) / 100.0 // 0.00 - 100.00
           Cell(i, j, value)
         }
       }
       .map(cell => ServerSentEvent(data = Some(cell.asJson.noSpaces)))
+  object RowsParam extends OptionalQueryParamDecoderMatcher[Int]("rows")
+  object ColsParam extends OptionalQueryParamDecoderMatcher[Int]("cols")
+
+
+  private val MinDim = 1
+  private val MaxDim = 50
+
+  private def clampDim(value: Option[Int], default: Int): Int =
+    value.filter(v => v >= MinDim && v <= MaxDim).getOrElse(default)
+
+
 
   val apiRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "api" / "stream" =>
-      Ok(randomCellStream)
+
+    case GET -> Root / "api" / "stream" :? RowsParam(rowsParam) +& ColsParam(colsParam) =>
+      val rows = clampDim(rowsParam, 5)
+      val cols = clampDim(colsParam, 3)
+      Ok(randomCellStream(rows, cols))
 
     case GET -> Root / "api" / "health" =>
       Ok(Map("status" -> "ok").asJson)
