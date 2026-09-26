@@ -17,8 +17,8 @@
     <scala.version>2.13.14</scala.version>
     <scala.binary.version>2.13</scala.binary.version>
     <http4s.version>0.23.31</http4s.version>
-    <cats.effect.version>3.5.4</cats.effect.version>
-    <fs2.version>3.10.2</fs2.version>
+    <cats.effect.version>3.6.3</cats.effect.version>
+    <fs2.version>3.12.2</fs2.version>
     <ip4s.version>3.4.0</ip4s.version>
     <circe.version>0.14.9</circe.version>
     <logback.version>1.4.14</logback.version>
