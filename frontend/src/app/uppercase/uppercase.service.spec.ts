@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { UppercaseService, UppercaseResponse } from './uppercase.service';
 
-describe('UppercaseService', () => {
+describe('UppercaseService : a very simple service that takes a string and returns it converted to uppercase', () => {
     let service: UppercaseService;
     let httpMock: HttpTestingController;
 
@@ -17,7 +17,6 @@ describe('UppercaseService', () => {
     });
 
     afterEach(() => {
-        // Ensures no unexpected requests were made
         httpMock.verify();
     });
 
