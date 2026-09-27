@@ -1,4 +1,8 @@
- --------------------------- render.com/
+ 
+for tests
+npm install --save-dev @types/jasmine@~5.1.0 jasmine-core@~5.1.0 karma@~6.4.0 karma-chrome-launcher@~3.2.0 karma-coverage@~2.2.0 karma-jasmine@~5.1.0 karma-jasmine-html-reporter@~2.1.0
+
+--------------------------- render.com/
 
 ==> Available at your primary URL https://angular-sandbox.onrender.com
 https://dashboard.render.com/web/srv-dai751e1egvs73ct5e3g/deploys/dep-dai751m1egvs73ct5eu0?r=2026-09-11%4021%3A27%3A38%7E2026-09-11%4021%3A31%3A56
