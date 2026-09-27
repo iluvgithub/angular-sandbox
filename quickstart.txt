@@ -2,6 +2,15 @@
 for tests
 npm install --save-dev @types/jasmine@~5.1.0 jasmine-core@~5.1.0 karma@~6.4.0 karma-chrome-launcher@~3.2.0 karma-coverage@~2.2.0 karma-jasmine@~5.1.0 karma-jasmine-html-reporter@~2.1.0
 
+
+see browser
+
+
+-    browsers: ['ChromeHeadlessCI'],   // <- switch this line to toggle browsers: ['Chrome'],
+-    singleRun: true,
++    browsers: ['Chrome'],   // <- switch this line to toggle browsers: ['Chrome'],
++    singleRun: false,
+
 --------------------------- render.com/
 
 ==> Available at your primary URL https://angular-sandbox.onrender.com
