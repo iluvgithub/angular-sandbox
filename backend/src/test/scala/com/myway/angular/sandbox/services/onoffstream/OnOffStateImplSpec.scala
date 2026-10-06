@@ -11,6 +11,7 @@ class OnOffStateImplSpec extends CatsEffectSuite {
   test("dataStream emits nothing while off") {
     val program = for {
       state <- OnOffState.create
+      _ <- state.turnOff
       ticks <- state.dataStream
         .interruptAfter(3.seconds)
         .compile

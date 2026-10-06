@@ -43,7 +43,7 @@ final class OnOffStateImpl(
 object OnOffState {
   def create: IO[OnOffState] =
     for {
-      flag    <- SignallingRef.of[IO, Boolean](false) // <-- must be SignallingRef.of, not Ref.of
+      flag    <- SignallingRef.of[IO, Boolean](true) // <-- must be SignallingRef.of, not Ref.of
       counter <- Ref.of[IO, Long](0L)
     } yield new OnOffStateImpl(flag, counter)
 }
