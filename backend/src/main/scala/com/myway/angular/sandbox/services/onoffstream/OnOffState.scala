@@ -16,20 +16,21 @@ trait OnOffState {
   def dataStream: Stream[IO, StreamTick]
   def turnOn: IO[Unit]
   def turnOff: IO[Unit]
+  def isOn: IO[String]
 }
 
 final class OnOffStateImpl(
-                            streamingFlag: SignallingRef[IO, Boolean], // <-- must be SignallingRef, not Ref
-                            tickCounter: Ref[IO, Long]
-                          ) extends OnOffState {
+  streamingFlag: SignallingRef[IO, Boolean], // <-- must be SignallingRef, not Ref
+  tickCounter: Ref[IO, Long]
+) extends OnOffState {
 
-  def turnOn: IO[Unit] =
+  override def turnOn: IO[Unit] =
     IO.println("turn on") >> streamingFlag.set(true)
 
-  def turnOff: IO[Unit] =
+  override def turnOff: IO[Unit] =
     IO.println("turn off") >> streamingFlag.set(false)
 
-  def dataStream: Stream[IO, StreamTick] =
+  override def dataStream: Stream[IO, StreamTick] =
     Stream
       .awakeEvery[IO](2.seconds)
       .pauseWhen(streamingFlag.map(isOn => !isOn))
@@ -38,6 +39,9 @@ final class OnOffStateImpl(
           .updateAndGet(_ + 1)
           .map(n => StreamTick(n, java.time.Instant.now.toString, true))
       }
+
+  override def isOn: IO[String] =
+    streamingFlag.get.map(b => if (b) "on" else "off")
 }
 
 object OnOffState {

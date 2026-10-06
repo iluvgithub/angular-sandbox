@@ -10,6 +10,7 @@ import com.myway.angular.sandbox.services.uppercase.UpperCaseService
 import fs2.concurrent.Topic
 import io.circe.syntax._
 import org.http4s._
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.headers.`Content-Type`
@@ -60,6 +61,9 @@ case class Routes(
       // GET /api/onoffstream/ -> IO[Response[IO]] streaming SSE
       case GET -> Root / "api" / "onoffstream" =>
         OnOffStateUtil.prepareRoute(state)
+
+      case GET -> Root / "api" / "ison" =>
+        state.isOn.flatMap(b => Ok(Map("status" -> b)))
     }
 
   private def corsRoutes(routes: HttpRoutes[IO]): HttpRoutes[IO] =
