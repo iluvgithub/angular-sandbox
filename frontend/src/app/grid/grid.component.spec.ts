@@ -1,7 +1,7 @@
-import { TestBed } from '@angular/core/testing';
-import { Subject } from 'rxjs';
-import { GridComponent } from './grid.component';
-import { GridService, Cell } from './grid.service';
+import {TestBed} from '@angular/core/testing';
+import {Subject} from 'rxjs';
+import {GridComponent} from './grid.component';
+import {Cell, GridService} from './grid.service';
 
 describe('GridComponent', () => {
     let gridServiceSpy: jasmine.SpyObj<GridService>;
@@ -18,7 +18,7 @@ describe('GridComponent', () => {
 
         TestBed.configureTestingModule({
             imports: [GridComponent],
-            providers: [{ provide: GridService, useValue: gridServiceSpy }]
+            providers: [{provide: GridService, useValue: gridServiceSpy}]
         });
     });
 
@@ -60,10 +60,10 @@ describe('GridComponent', () => {
         const fixture = createComponent();
         const component = fixture.componentInstance;
 
-        currentSubject().next({ i: 2, j: 1, value: 99 });
+        currentSubject().next({i: 2, j: 1, value: 99});
 
         expect(component.grid[2][1]).toBe(99);
-        expect(component.lastUpdated).toEqual({ i: 2, j: 1 });
+        expect(component.lastUpdated).toEqual({i: 2, j: 1});
         expect(component.isActive(2, 1)).toBeTrue();
         expect(component.isActive(0, 0)).toBeFalse();
     });
@@ -72,7 +72,7 @@ describe('GridComponent', () => {
         const fixture = createComponent();
         const component = fixture.componentInstance;
 
-        currentSubject().next({ i: 99, j: 99, value: 1 });
+        currentSubject().next({i: 99, j: 99, value: 1});
 
         expect(component.lastUpdated).toBeNull();
         expect(component.grid.flat().every((v) => v === 0)).toBeTrue();
@@ -169,7 +169,7 @@ describe('GridComponent', () => {
             component.increaseRows(); // now 6 rows, new subject active
 
             // Emitting on the OLD (unsubscribed) stream should have no effect
-            oldSubject.next({ i: 0, j: 0, value: 123 });
+            oldSubject.next({i: 0, j: 0, value: 123});
 
             expect(component.grid[0][0]).toBe(0);
             expect(component.lastUpdated).toBeNull();
