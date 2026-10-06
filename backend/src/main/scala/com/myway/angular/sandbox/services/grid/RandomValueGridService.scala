@@ -18,7 +18,7 @@ trait RandomValueGridService {
 
 object RandomValueGridServiceInstance extends RandomValueGridService {
 
-  val Period: FiniteDuration = 800.millis
+  val PERIOD: FiniteDuration = 800.millis
 
   val RANGE = 10000
 
@@ -36,7 +36,7 @@ object RandomValueGridServiceInstance extends RandomValueGridService {
 
   def randomCellStream(rows: Int, cols: Int): Stream[IO, ServerSentEvent] =
     Stream
-      .awakeEvery[IO](Period)
+      .awakeEvery[IO](PERIOD)
       .map { _ =>
         val i = Random.nextInt(rows)
         val j = Random.nextInt(cols)
