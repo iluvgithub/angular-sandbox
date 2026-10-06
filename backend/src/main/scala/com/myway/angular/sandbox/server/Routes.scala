@@ -4,10 +4,8 @@ import cats.effect._
 import cats.syntax.semigroupk._
 import com.myway.angular.sandbox.services.chat.ChatService
 import com.myway.angular.sandbox.services.grid.RandomValueGridService
-import com.myway.angular.sandbox.services.grid.RandomValueGridServiceInstance.{
-  ColsParam,
-  RowsParam
-}
+import com.myway.angular.sandbox.services.grid.RandomValueGridServiceInstance.{ColsParam, RowsParam}
+import com.myway.angular.sandbox.services.onoffstream.{OnOffState, OnOffStateUtil}
 import com.myway.angular.sandbox.services.uppercase.UpperCaseService
 import fs2.concurrent.Topic
 import io.circe.syntax._
@@ -19,9 +17,9 @@ import org.http4s.server.middleware.CORS
 import org.http4s.server.staticcontent.resourceServiceBuilder
 
 case class Routes(
-    upperCaseService: UpperCaseService,
-    randomValueGridService: RandomValueGridService,
-    chatService: ChatService
+  upperCaseService: UpperCaseService,
+  randomValueGridService: RandomValueGridService,
+  chatService: ChatService
 ) {
 
   def apiRoutes(topicsMap: Map[String, Topic[IO, String]]): HttpRoutes[IO] =
@@ -48,30 +46,45 @@ case class Routes(
 
     }
 
-  private def corsApiRoutes(
-      topicsMap: Map[String, Topic[IO, String]]
-  ): HttpRoutes[IO] =
+  def routesOnOff(state: OnOffState): HttpRoutes[IO] =
+    HttpRoutes.of[IO] {
+
+      // GET /api/onstream/ -> IO[Response[IO]]
+      case GET -> Root / "api" / "onstream" =>
+        state.turnOn *> Ok(Map("status" -> "on").asJson)
+
+      // GET /api/offstream/ -> IO[Response[IO]]
+      case GET -> Root / "api" / "offstream" =>
+        state.turnOff *> Ok(Map("status" -> "off").asJson)
+
+      // GET /api/onoffstream/ -> IO[Response[IO]] streaming SSE
+      case GET -> Root / "api" / "onoffstream" =>
+        OnOffStateUtil.prepareRoute(state)
+    }
+
+  private def corsRoutes(routes: HttpRoutes[IO]): HttpRoutes[IO] =
     CORS.policy.withAllowOriginAll
       .withAllowCredentials(false)
-      .apply(apiRoutes(topicsMap))
+      .apply(routes)
 
-  /** Serves the compiled Angular assets from src/main/resources/static
-    * (classpath resource "/static"), which is populated at build time by
-    * copying frontend/dist/frontend into this module's resources.
+  /** Serves the compiled Angular assets from src/main/resources/static (classpath resource
+    * "/static"), which is populated at build time by copying frontend/dist/frontend into this
+    * module's resources.
     */
   private val staticAssetRoutes: HttpRoutes[IO] =
     resourceServiceBuilder[IO]("/static").toRoutes
 
-  /** Fallback: serve index.html for any other GET request, so Angular's
-    * client-side router works on deep links / page refreshes.
+  /** Fallback: serve index.html for any other GET request, so Angular's client-side router works on
+    * deep links / page refreshes.
     */
-  private val indexFallbackRoute: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req @ GET -> _ =>
-      StaticFile
-        .fromResource[IO]("/static/index.html", Some(req))
-        .getOrElseF(NotFound())
+  private val indexFallbackRoute: HttpRoutes[IO] = HttpRoutes.of[IO] { case req @ GET -> _ =>
+    StaticFile
+      .fromResource[IO]("/static/index.html", Some(req))
+      .getOrElseF(NotFound())
   }
 
-  def routes(topicsMap: Map[String, Topic[IO, String]]): HttpRoutes[IO] =
-    corsApiRoutes(topicsMap) <+> staticAssetRoutes <+> indexFallbackRoute
+  def routes(topicsMap: Map[String, Topic[IO, String]], onOffState: OnOffState): HttpRoutes[IO] =
+    corsRoutes(apiRoutes(topicsMap)) <+> corsRoutes(
+      routesOnOff(onOffState)
+    ) <+> staticAssetRoutes <+> indexFallbackRoute
 }

@@ -2,11 +2,9 @@ package com.myway.angular.sandbox.main
 import cats.effect._
 import com.comcast.ip4s._
 import com.myway.angular.sandbox.server.Routes
-import com.myway.angular.sandbox.services.chat.{
-  ChatService,
-  ChatServiceInstance
-}
+import com.myway.angular.sandbox.services.chat.{ChatService, ChatServiceInstance}
 import com.myway.angular.sandbox.services.grid.RandomValueGridServiceInstance
+import com.myway.angular.sandbox.services.onoffstream.OnOffState
 import com.myway.angular.sandbox.services.uppercase.UpperCaseServiceInstance
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
@@ -20,6 +18,7 @@ object Main extends IOApp.Simple {
   val run: IO[Unit] =
     for {
       topics <- ChatServiceInstance.buildTopics
+      onOffState <- OnOffState.create
       _ <- EmberServerBuilder
         .default[IO]
         .withHost(host"0.0.0.0")
@@ -30,7 +29,7 @@ object Main extends IOApp.Simple {
               UpperCaseServiceInstance,
               RandomValueGridServiceInstance,
               ChatServiceInstance
-            ).routes(topics).orNotFound
+            ).routes(topics, onOffState).orNotFound
           )
         )
         .build

@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.syntax.all._
 import com.myway.angular.sandbox.services.chat.ChatService
 import com.myway.angular.sandbox.services.grid.RandomValueGridService
+import com.myway.angular.sandbox.services.onoffstream.OnOffState
 import com.myway.angular.sandbox.services.uppercase.UpperCaseService
 import fs2.concurrent.Topic
 import munit.CatsEffectSuite
@@ -53,7 +54,8 @@ class RoutesTest
     for {
       topics <- buildTopics
       req = Request[IO](Method.GET, uri"/api/stream?rows=5&cols=3")
-      resp <- m.routes.routes(topics).orNotFound(req)
+      onOffState <- OnOffState.create
+      resp <- m.routes.routes(topics, onOffState).orNotFound(req)
     } yield {
       assertEquals(resp.status, Status.Ok)
       m.grid.respond(Some(5), Some(3)) was called
@@ -67,9 +69,10 @@ class RoutesTest
     m.grid.respond(None, None) returns IO.pure(Response[IO](Status.Ok))
 
     for {
+      onOffState <- OnOffState.create
       topics <- buildTopics
       req = Request[IO](Method.GET, uri"/api/stream")
-      _ <- m.routes.routes(topics).orNotFound(req)
+      _ <- m.routes.routes(topics, onOffState).orNotFound(req)
     } yield m.grid.respond(None, None) was called
   }
 
