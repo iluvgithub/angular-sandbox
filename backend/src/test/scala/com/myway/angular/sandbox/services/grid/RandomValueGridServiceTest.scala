@@ -84,7 +84,7 @@ class RandomValueGridServiceTest extends CatsEffectSuite {
     // wall-clock time even though 4 * Period of *virtual* time elapses.
     TestControl.executeEmbed(program).map { elapsed =>
       assert(
-        elapsed >= randomValueGridService.Period * 3,
+        elapsed >= randomValueGridService.PERIOD * 3,
         s"expected at least 3 full periods to elapse for 4 spaced events, got $elapsed"
       )
     }
