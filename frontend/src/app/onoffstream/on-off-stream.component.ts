@@ -23,6 +23,9 @@ export class OnOffStreamComponent implements OnInit, OnDestroy {
                 private cdr: ChangeDetectorRef) {}
     ngOnInit(): void {
          try {
+             this.onOffStreamService.getIsOn().subscribe((isOn: boolean) => {
+                 this.isStreaming = isOn;
+             });
              this.streamSub = this.onOffStreamService.getStream().subscribe((data: OnOffStreamData | null) => {
                  this.ngZone.run(() => {
                      if (data) {
