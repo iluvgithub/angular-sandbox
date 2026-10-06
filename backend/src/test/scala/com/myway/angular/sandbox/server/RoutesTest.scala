@@ -12,10 +12,7 @@ import org.http4s._
 import org.http4s.implicits._
 import org.mockito.{ArgumentMatchersSugar, IdiomaticMockito}
 
-class RoutesTest
-    extends CatsEffectSuite
-    with IdiomaticMockito
-    with ArgumentMatchersSugar {
+class RoutesTest extends CatsEffectSuite with IdiomaticMockito with ArgumentMatchersSugar {
 
   private def buildTopics: IO[Map[String, Topic[IO, String]]] =
     List("Asterix", "Obelix")
@@ -23,26 +20,26 @@ class RoutesTest
       .map(_.toMap)
 
   private def hasHeader(
-      resp: Response[IO],
-      name: String,
-      value: String
+    resp: Response[IO],
+    name: String,
+    value: String
   ): Boolean =
-    resp.headers.headers.exists(h =>
-      h.name.toString.equalsIgnoreCase(name) && h.value == value
-    )
+    resp.headers.headers.exists(h => h.name.toString.equalsIgnoreCase(name) && h.value == value)
 
   private case class Mocks(
-      upperCase: UpperCaseService,
-      grid: RandomValueGridService,
-      chat: ChatService,
-      routes: Routes
+    upperCase: UpperCaseService,
+    grid: RandomValueGridService,
+    chat: ChatService,
+    routes: Routes,
+    onOffState: OnOffState
   )
 
   private def newMocks(): Mocks = {
-    val upperCase = mock[UpperCaseService]
-    val grid = mock[RandomValueGridService]
-    val chat = mock[ChatService]
-    Mocks(upperCase, grid, chat, Routes(upperCase, grid, chat))
+    val upperCase  = mock[UpperCaseService]
+    val grid       = mock[RandomValueGridService]
+    val chat       = mock[ChatService]
+    val onOffState = mock[OnOffState]
+    Mocks(upperCase, grid, chat, Routes(upperCase, grid, chat), onOffState)
   }
 
   test(
@@ -54,8 +51,7 @@ class RoutesTest
     for {
       topics <- buildTopics
       req = Request[IO](Method.GET, uri"/api/stream?rows=5&cols=3")
-      onOffState <- OnOffState.create
-      resp <- m.routes.routes(topics, onOffState).orNotFound(req)
+      resp <- m.routes.routes(topics, m.onOffState).orNotFound(req)
     } yield {
       assertEquals(resp.status, Status.Ok)
       m.grid.respond(Some(5), Some(3)) was called
@@ -69,23 +65,22 @@ class RoutesTest
     m.grid.respond(None, None) returns IO.pure(Response[IO](Status.Ok))
 
     for {
-      onOffState <- OnOffState.create
       topics <- buildTopics
       req = Request[IO](Method.GET, uri"/api/stream")
-      _ <- m.routes.routes(topics, onOffState).orNotFound(req)
+      _ <- m.routes.routes(topics, m.onOffState).orNotFound(req)
     } yield m.grid.respond(None, None) was called
   }
 
   test(
     "POST /api/uppercase delegates to UpperCaseService.respond with the same request"
   ) {
-    val m = newMocks()
+    val m   = newMocks()
     val req = Request[IO](Method.POST, uri"/api/uppercase")
     m.upperCase.respond(req) returns IO.pure(Response[IO](Status.Ok))
 
     for {
       topics <- buildTopics
-      resp <- m.routes.routes(topics).orNotFound(req)
+      resp   <- m.routes.routes(topics, m.onOffState).orNotFound(req)
     } yield {
       assertEquals(resp.status, Status.Ok)
       m.upperCase.respond(req) was called
@@ -97,13 +92,13 @@ class RoutesTest
   test(
     "GET /api/health returns 200 with a JSON status body, independent of any service"
   ) {
-    val m = newMocks()
+    val m   = newMocks()
     val req = Request[IO](Method.GET, uri"/api/health")
 
     for {
       topics <- buildTopics
-      resp <- m.routes.routes(topics).orNotFound(req)
-      body <- resp.as[String]
+      resp   <- m.routes.routes(topics, m.onOffState).orNotFound(req)
+      body   <- resp.as[String]
     } yield {
       assertEquals(resp.status, Status.Ok)
       assertEquals(
@@ -131,7 +126,7 @@ class RoutesTest
         Response[IO](Status.Ok)
       )
       req = Request[IO](Method.GET, uri"/api/chat/Asterix/stream")
-      resp <- m.routes.routes(topics).orNotFound(req)
+      resp <- m.routes.routes(topics, m.onOffState).orNotFound(req)
     } yield {
       assertEquals(resp.status, Status.Ok)
       m.chat.subscribe(topics, "Asterix") was called
@@ -141,7 +136,7 @@ class RoutesTest
   test(
     "POST /api/chat/send delegates to ChatService.sendMessage with the same request"
   ) {
-    val m = newMocks()
+    val m   = newMocks()
     val req = Request[IO](Method.POST, uri"/api/chat/send")
 
     for {
@@ -149,7 +144,7 @@ class RoutesTest
       _ = m.chat.sendMessage(topics, req) returns IO.pure(
         Response[IO](Status.Ok)
       )
-      resp <- m.routes.routes(topics).orNotFound(req)
+      resp <- m.routes.routes(topics, m.onOffState).orNotFound(req)
     } yield {
       assertEquals(resp.status, Status.Ok)
       m.chat.sendMessage(topics, req) was called
@@ -159,12 +154,12 @@ class RoutesTest
   test(
     "an unmatched API path falls through without touching any service mock"
   ) {
-    val m = newMocks()
+    val m   = newMocks()
     val req = Request[IO](Method.GET, uri"/api/does-not-exist")
 
     for {
       topics <- buildTopics
-      _ <- m.routes.routes(topics).orNotFound(req)
+      _      <- m.routes.routes(topics, m.onOffState).orNotFound(req)
     } yield {
       m.upperCase wasNever called
       m.grid wasNever called

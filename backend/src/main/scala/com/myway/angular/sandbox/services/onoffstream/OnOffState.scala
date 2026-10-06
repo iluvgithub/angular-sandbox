@@ -10,10 +10,15 @@ import org.http4s.{MediaType, Response, Status}
 import scala.concurrent.duration._
 final case class StreamTick(tick: Long, timestamp: String, streaming: Boolean)
 
-final class OnOffState(
+trait OnOffState {
+  def dataStream: Stream[IO, StreamTick]
+  def turnOn: IO[Unit]
+  def turnOff: IO[Unit]
+}
+final class OnOffStateImpl(
   streamingFlag: Ref[IO, Boolean],
   tickCounter: Ref[IO, Long]
-) {
+) extends  OnOffState {
 
   def turnOn: IO[Unit] =
     IO.println("turn on") >> streamingFlag.set(true)
@@ -39,7 +44,7 @@ object OnOffState {
     for {
       flag    <- Ref.of[IO, Boolean](false)
       counter <- Ref.of[IO, Long](0L)
-    } yield new OnOffState(flag, counter)
+    } yield new OnOffStateImpl(flag, counter)
 }
 
 object OnOffStateUtil {
