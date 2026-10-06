@@ -1,0 +1,17 @@
+<div class="on-off-stream">
+    <h1>On/Off Stream</h1>
+
+    <div class="controls">
+        <button (click)="onOn()" [disabled]="isStreaming">On</button>
+        <button (click)="onOff()" [disabled]="!isStreaming">Off</button>
+        <span class="status">Status: {{ isStreaming ? 'ON' : 'OFF' }}</span>
+    </div>
+
+    <textarea
+            [ngModel]="streamText"
+            readonly
+            rows="15"
+            cols="60"
+            placeholder="Stream data will appear here...">
+  </textarea>
+</div>

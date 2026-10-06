@@ -1,0 +1,32 @@
+.on-off-stream {
+  max-width: 700px;
+  margin: 2rem auto;
+  font-family: 'Segoe UI', sans-serif;
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    button {
+      padding: 0.5rem 1.5rem;
+      cursor: pointer;
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+
+    .status {
+      font-weight: bold;
+    }
+  }
+
+  textarea {
+    width: 100%;
+    font-family: monospace;
+    padding: 0.5rem;
+  }
+}
